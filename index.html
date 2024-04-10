@@ -121,10 +121,19 @@
     d3.csv(spreadsheetUrl).then(data => {
       // Sort the data by Journal_Name and then by Status
       data.sort((a, b) => {
-        if (a.Journal_Name !== b.Journal_Name) {
-          return a.Journal_Name.localeCompare(b.Journal_Name);
+        // Define the desired order
+        const order = ['N/A', 'EoC', 'Retraction'];
+        
+        // Get the index of status in the desired order
+        const statusIndexA = order.indexOf(a.Status);
+        const statusIndexB = order.indexOf(b.Status);
+
+        // If the statuses are different, sort by status index
+        if (statusIndexA !== statusIndexB) {
+          return statusIndexA - statusIndexB;
         } else {
-          return a.Status.localeCompare(b.Status);
+          // If the statuses are the same, sort by Journal_Name
+          return a.Journal_Name.localeCompare(b.Journal_Name);
         }
       });
 
