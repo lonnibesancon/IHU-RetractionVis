@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js Stacked Bar Chart with Status Legend</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    ##general-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    }
+
+    #interaction-info-container {
+        display: flex;
+    }
+
+    #interaction-box {
+        width: 60%;
+    }
+
+    #info-box {
+        width: 40%;
+    }
+
+    #graph-container {
+        margin-top: 20px;
+    }
+
+    #chart {
+      display: inline-block;
+      position: relative;
+      width: 100%;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+    }
+
+    .legend-item__color {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+  </style>
+  <!-- Include D3.js library -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div id="general-box">
+    <div id="interaction-info-container">
+        <div id="interaction-box">
+            <p>This is the infobox - This is the infobox - This is the infobox</p>
+            <p>This is the infobox - This is the infobox - This is the infobox</p>
+        </div>
+        <div id="info-box">
+          <table id="info-table">
+              <tbody>
+                  <tr>
+                      <td>DOI:</td>
+                      <td id="DOI"></td>
+                  </tr>
+                  <tr>
+                      <td>Title</td>
+                      <td id="Title"></td>
+                  </tr>
+                  <tr>
+                      <td>Journal Name</td>
+                      <td id="Journal_Name"></td>
+                  </tr>
+                  <tr>
+                      <td>Status</td>
+                      <td id="Status"></td>
+                  </tr>
+                  <tr>
+                      <td>Link to Status Update</td>
+                      <td id="DOI_Status"></td>
+                  </tr>
+              </tbody>
+          </table>
+        </div>
+    </div>
+    <div id="grouped-checkbox-container">
+        <input type="checkbox" id="grouped-checkbox">
+        <label for="grouped-checkbox">Grouped</label>
+    </div>
+</div>
+<div id="graph-container">
+    <svg id="chart"></svg>
+    <div class="legend" id="legend"></div>
+</div>
+
+  <script>
+    // Google Spreadsheet URL
+    const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZMRkkQWNEz6zzcOaI3PwJohV6rqS6cYl5rTJm0LrQb9hthouOMdf4YfuDXr2bDgny9F7fHjSo9S8J/pub?output=csv';
+
+    // Define colors for each status
+    const statusColors = {
+      'N/A': 'gray',
+      'Retraction': 'red',
+      'EoC': 'blue'
+    };
+
+    // Fetch the data from the Google Spreadsheet
+    d3.csv(spreadsheetUrl).then(data => {
+      // Sort the data by Journal_Name and then by Status
+      data.sort((a, b) => {
+        if (a.Journal_Name !== b.Journal_Name) {
+          return a.Journal_Name.localeCompare(b.Journal_Name);
+        } else {
+          return a.Status.localeCompare(b.Status);
+        }
+      });
+
+      // Group data by Journal_Name
+      const groupedData = d3.group(data, d => d.Journal_Name);
+
+      // Calculate total count for x axis
+      const totalCount = data.length;
+
+      // Calculate maximum count for x axis
+      const maxCount = d3.max(Array.from(groupedData.values()), d => d.length);
+
+      // D3.js code for visualization
+      const margin = { top: 20, right: 20, bottom: 50, left: 100 };
+      const width = 800 - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      const svg = d3.select("#chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Define scales
+      const xScale = d3.scaleLinear()
+        .domain([0, maxCount+1])
+        .range([0, width]);
+
+      const yScale = d3.scaleBand()
+        .domain(Array.from(groupedData.keys()))
+        .range([0, height])
+        .padding(0.1);
+
+      // Draw x-axis
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale));
+
+      // Draw y-axis
+      svg.append("g")
+        .call(d3.axisLeft(yScale).tickSize(0))
+        .selectAll(".tick text")
+        .call(wrap, margin.left - 10);
+
+      // Draw bars
+      svg.selectAll(".bar-group")
+        .data(groupedData)
+        .enter()
+        .append("g")
+        .attr("class", "bar-group")
+        .each(function(groupData, i) {
+          const group = d3.select(this);
+          group.selectAll("rect")
+            .data(groupData[1])
+            .enter().append("rect")
+            .attr("x", (d, i) => xScale(i)) // Adjust width between rectangles
+            .attr("y", (d,i) => (yScale(groupData[0])+yScale.bandwidth()/2)) // Adjust height between rows
+            .attr("width", (xScale(1) -(2*xScale(1)/10))) // Adjust width of rectangles
+            .attr("height", 10) // Adjust height of rectangles
+            .attr("fill", d => statusColors[d.Status])
+            .attr("stroke", "black")
+            .on("mouseover", function(event, d) {
+              // Display row information
+              //const infoBox = d3.select("#info-box");
+              let targetElement = d3.select("#DOI");
+              targetElement.text(d.DOI);
+              targetElement = d3.select("#Title");
+              targetElement.text(d.Title);
+              targetElement = d3.select("#Journal_Name");
+              targetElement.text(d.Journal_Name);
+              targetElement = d3.select("#Status");
+              targetElement.text(d.Status);
+              targetElement = d3.select("#DOI_Status");
+              targetElement.text(d.DOI_Status);
+              })
+            .on("mouseout", function(event, d) {
+              // Clear info box
+              //const infoBox = d3.select("#info-box");
+              //infoBox.text("");
+            });
+        });
+
+      // Add legend
+      const legend = d3.select("#legend");
+
+      Object.entries(statusColors).forEach(([status, color]) => {
+        const legendItem = legend.append("div").attr("class", "legend-item");
+        legendItem.append("div")
+          .attr("class", "legend-item__color")
+          .style("background-color", color);
+        legendItem.append("span").text(status);
+      });
+
+      // Add event listener for the checkbox
+      d3.select("#grouped-checkbox").on("change", function() {
+        const isChecked = d3.select(this).property("checked");
+        // Your code to handle checkbox state here
+      });
+
+    }).catch(error => {
+      console.error('Error fetching the data:', error);
+    });
+
+    function wrap(text, width) {
+      text.each(function() {
+        var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          y = text.attr("y"),
+          dy = parseFloat(text.attr("dy") || 0),
+          tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+        while (word = words.pop()) {
+          line.push(word);
+          tspan.text(line.join(" "));
+          if (tspan.node().getComputedTextLength() > width) {
+            line.pop();
+            tspan.text(line.join(" "));
+            line = [word];
+            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
