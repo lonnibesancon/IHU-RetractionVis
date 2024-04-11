@@ -169,7 +169,7 @@
 
       const citationScale = d3.scaleLinear()
         .domain([0, d3.max(data, d => parseFloat(d.Citations))])
-        .range([5, yScale.bandwidth()]);
+        .range([5, yScale.bandwidth()/2]);
 
       // Draw x-axis
       svg.append("g")
@@ -200,11 +200,16 @@
             .each(function(d, i) {
               const citationRadius = Math.max(5, Math.min(yScale.bandwidth(), citationScale(parseFloat(d.Citations))));
               const circleGroup = d3.select(this);
-              console.log("Top i")
-              console.dir(i)
+              circleGroup.append("circle")
+                .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar //Cannot use (d,i) here because we want the i from the parent function
+                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                .attr("r", citationRadius)
+                .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
+                .attr("fill-opacity", 0.3)
+                .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
               circleGroup.append("circle")
                 .attr("cx", (d) => {  //Cannot use (d,i) here because we want the i from the parent function
-                    return (xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar
+                    return (xScale(i+1)) // Set the x position to the middle of the bar
                  })
                 .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
                 .attr("r", 5)
@@ -220,23 +225,13 @@
                   targetElement = d3.select("#Status");
                   targetElement.text(d.Status);
                   targetElement = d3.select("#DOI_Status");
-                  targetElement.text(d.DOI_Status)
-                  console.log("event")
-                  console.dir(event)
-                  console.log("d")
-                  console.dir(d)
-                  })
+                  targetElement.text(d.DOI_Status);
+                })
                 .on("mouseout", function(event, d) {
                   // Clear info box
                   //const infoBox = d3.select("#info-box");
                   //infoBox.text("");
                 });
-              circleGroup.append("circle")
-                .attr("cx", (d) => xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar //Cannot use (d,i) here because we want the i from the parent function
-                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                .attr("r", citationRadius)
-                .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
-                .attr("fill-opacity", 0.3);
             });
 
           /*
