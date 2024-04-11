@@ -14,26 +14,26 @@
       flex-direction: column;
     }
 
-    ##general-box {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
+    #general-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     #interaction-info-container {
-        display: flex;
+      display: flex;
     }
 
     #interaction-box {
-        width: 60%;
+      width: 60%;
     }
 
     #info-box {
-        width: 40%;
+      width: 40%;
     }
 
     #graph-container {
-        margin-top: 20px;
+      margin-top: 20px;
     }
 
     #chart {
@@ -140,11 +140,11 @@
       // Group data by Journal_Name
       const groupedData = d3.group(data, d => d.Journal_Name);
 
-      // Calculate total count for x axis
-      const totalCount = data.length;
+      // Sort groupedData by total count in increasing order
+      const sortedGroupedData = Array.from(groupedData.entries()).sort((a, b) => b[1].length - a[1].length);
 
       // Calculate maximum count for x axis
-      const maxCount = d3.max(Array.from(groupedData.values()), d => d.length);
+      const maxCount = d3.max(sortedGroupedData, d => d[1].length);
 
       // D3.js code for visualization
       const margin = { top: 20, right: 20, bottom: 50, left: 100 };
@@ -157,15 +157,19 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      // Define scales
+      // Define scales using sorted data
       const xScale = d3.scaleLinear()
         .domain([0, maxCount+1])
         .range([0, width]);
 
       const yScale = d3.scaleBand()
-        .domain(Array.from(groupedData.keys()))
+        .domain(sortedGroupedData.map(d => d[0])) // Use sorted group keys
         .range([0, height])
         .padding(0.1);
+
+      const citationScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => parseFloat(d.Citations))])
+        .range([5, yScale.bandwidth()]);
 
       // Draw x-axis
       svg.append("g")
@@ -178,42 +182,95 @@
         .selectAll(".tick text")
         .call(wrap, margin.left - 10);
 
-      // Draw bars
+
+
+      // Draw circles
       svg.selectAll(".bar-group")
-        .data(groupedData)
+        .data(sortedGroupedData)
         .enter()
         .append("g")
         .attr("class", "bar-group")
         .each(function(groupData, i) {
           const group = d3.select(this);
-          group.selectAll("rect")
+          group.selectAll("circle")
             .data(groupData[1])
-            .enter().append("rect")
-            .attr("x", (d, i) => xScale(i)) // Adjust width between rectangles
-            .attr("y", (d,i) => (yScale(groupData[0])+yScale.bandwidth()/2)) // Adjust height between rows
-            .attr("width", (xScale(1) -(2*xScale(1)/10))) // Adjust width of rectangles
-            .attr("height", 10) // Adjust height of rectangles
-            .attr("fill", d => statusColors[d.Status])
-            .attr("stroke", "black")
-            .on("mouseover", function(event, d) {
-              // Display row information
-              //const infoBox = d3.select("#info-box");
-              let targetElement = d3.select("#DOI");
-              targetElement.text(d.DOI);
-              targetElement = d3.select("#Title");
-              targetElement.text(d.Title);
-              targetElement = d3.select("#Journal_Name");
-              targetElement.text(d.Journal_Name);
-              targetElement = d3.select("#Status");
-              targetElement.text(d.Status);
-              targetElement = d3.select("#DOI_Status");
-              targetElement.text(d.DOI_Status);
-              })
-            .on("mouseout", function(event, d) {
-              // Clear info box
-              //const infoBox = d3.select("#info-box");
-              //infoBox.text("");
+            .enter()
+            .append("g")
+            .attr("class", "circle-group")
+            .each(function(d, i) {
+              const citationRadius = Math.max(5, Math.min(yScale.bandwidth(), citationScale(parseFloat(d.Citations))));
+              const circleGroup = d3.select(this);
+              console.log("Top i")
+              console.dir(i)
+              circleGroup.append("circle")
+                .attr("cx", (d) => {  //Cannot use (d,i) here because we want the i from the parent function
+                    return (xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar
+                 })
+                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                .attr("r", 5)
+                .attr("fill", statusColors[d.Status])
+                .on("mouseover", function(event, d) {
+                  // Display row information
+                  let targetElement = d3.select("#DOI");
+                  targetElement.text(d.DOI);
+                  targetElement = d3.select("#Title");
+                  targetElement.text(d.Title);
+                  targetElement = d3.select("#Journal_Name");
+                  targetElement.text(d.Journal_Name);
+                  targetElement = d3.select("#Status");
+                  targetElement.text(d.Status);
+                  targetElement = d3.select("#DOI_Status");
+                  targetElement.text(d.DOI_Status)
+                  console.log("event")
+                  console.dir(event)
+                  console.log("d")
+                  console.dir(d)
+                  })
+                .on("mouseout", function(event, d) {
+                  // Clear info box
+                  //const infoBox = d3.select("#info-box");
+                  //infoBox.text("");
+                });
+              circleGroup.append("circle")
+                .attr("cx", (d) => xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar //Cannot use (d,i) here because we want the i from the parent function
+                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                .attr("r", citationRadius)
+                .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
+                .attr("fill-opacity", 0.3);
             });
+
+          /*
+          .each(function(groupData, i) {
+            const group = d3.select(this);
+            group.selectAll("circle")
+              .data(groupData[1])
+              .enter()
+              .append("circle")
+              .attr("cx", (d, i) => xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar
+              .attr("cy", (d,i) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+              .attr("r", yScale.bandwidth() / 2) // Size based on yScale bandwidth
+              .attr("fill", d => statusColors[d.Status]) // Fill color based on status
+              .on("mouseover", function(event, d) {
+                // Display row information
+                let targetElement = d3.select("#DOI");
+                targetElement.text(d.DOI);
+                targetElement = d3.select("#Title");
+                targetElement.text(d.Title);
+                targetElement = d3.select("#Journal_Name");
+                targetElement.text(d.Journal_Name);
+                targetElement = d3.select("#Status");
+                targetElement.text(d.Status);
+                targetElement = d3.select("#DOI_Status");
+                targetElement.text(d.DOI_Status);
+              })
+              .on("mouseout", function(event, d) {
+                // Clear info box
+                //const infoBox = d3.select("#info-box");
+                //infoBox.text("");
+              });
+        });*/
+
+
         });
 
       // Add legend
