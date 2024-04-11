@@ -206,6 +206,7 @@
                 .attr("r", citationRadius)
                 .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
                 .attr("fill-opacity", 0.3)
+                .attr("original-fill", statusColors[d.Status])
                 .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
               circleGroup.append("circle")
                 .attr("cx", (d) => {  //Cannot use (d,i) here because we want the i from the parent function
@@ -214,7 +215,10 @@
                 .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
                 .attr("r", 5)
                 .attr("fill", statusColors[d.Status])
+                .attr("original-fill", statusColors[d.Status])
                 .on("mouseover", function(event, d) {
+                  d3.select(this.parentNode).selectAll("circle")
+                    .attr("fill", "yellow"); // Change fill color to yellow
                   // Display row information
                   let targetElement = d3.select("#DOI");
                   targetElement.text(d.DOI);
@@ -228,6 +232,8 @@
                   targetElement.text(d.DOI_Status);
                 })
                 .on("mouseout", function(event, d) {
+                  d3.select(this.parentNode).selectAll("circle")
+                    .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
                   // Clear info box
                   //const infoBox = d3.select("#info-box");
                   //infoBox.text("");
