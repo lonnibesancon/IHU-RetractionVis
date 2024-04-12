@@ -98,6 +98,14 @@
               <td id="Status"></td>
             </tr>
             <tr>
+              <td>Citations</td>
+              <td id="Citations"></td>
+            </tr>
+            <tr>
+              <td>IRB Number</td>
+              <td id="IRB_Number"></td>
+            </tr>
+            <tr>
               <td>Link to Status Update</td>
               <td id="DOI_Status"></td>
             </tr>
@@ -171,6 +179,9 @@
         .range([0, height])
         .padding(0.1);
 
+      // Set yScale domain after data is loaded
+      yScale.domain(sortedGroupedData.map(d => d[0]));
+
       const citationScale = d3.scaleLinear()
         .domain([0, d3.max(data, d => parseFloat(d.Citations))])
         .range([5, yScale.bandwidth()/2]);
@@ -192,13 +203,42 @@
       // Create a dropdown menu or selection field in your HTML
       const selectIRBNumber = d3.select("#IRBNumberSelect")
         .on("change", function() {
+          console.log("-------------------")
+          console.log("SORTING STARTED")
+          console.log("sortedGroupedData")
+          console.dir(sortedGroupedData)
           const selectedIRBNumber = this.value; // Get the selected IRB_Number value
           if (selectedIRBNumber === "All") {
             filteredData = sortedGroupedData; // Show all data
           } else {
-            filteredData = sortedGroupedData.filter(d => d[1].some(item => item.IRB_Number === selectedIRBNumber)); // Filter data based on selected IRB_Number
+            filteredData = sortedGroupedData.map(group => {
+              const filteredItems = group[1].filter(item => {
+                console.log("Checking IRB_Number:", item.IRB_Number);
+                console.log("Selected IRB_Number:", selectedIRBNumber);
+
+                // Convert to strings if they are not already
+                const itemIRB = String(item.IRB_Number);
+                const selectedIRB = String(selectedIRBNumber);
+
+                if (itemIRB !== item.IRB_Number) {
+                  console.log("Converted IRB_Number to string:", itemIRB);
+                }
+
+                if (selectedIRB !== selectedIRBNumber) {
+                  console.log("Converted selectedIRBNumber to string:", selectedIRB);
+                }
+
+                return itemIRB === selectedIRB; // Compare as strings
+              });
+
+              return [group[0], filteredItems]; // Return group with filtered items
+            });
           }
-          updateVisualization(filteredData);
+          updateVisualization();
+          console.log("filteredData")
+          console.dir(filteredData)
+          console.log("SORTING FINISHED")
+          console.log("-------------------")
         });
 
       // Add an option for "All" IRB_Numbers
@@ -209,8 +249,6 @@
       uniqueIRBNumbers.forEach(number => {
         selectIRBNumber.append("option").text(number).attr("value", number);
       });
-
-      updateVisualization(sortedGroupedData); // Draw initial visualization
 
       // Add legend
       const legend = d3.select("#legend");
@@ -223,63 +261,78 @@
         legendItem.append("span").text(status);
       });
 
-      function updateVisualization(data) {
-        yScale.domain(data.map(d => d[0]));
+      function updateVisualization() {
+        // Update yScale domain based on filteredData
+        yScale.domain(filteredData.map(d => d[0]));
 
-        svg.selectAll(".bar-group").remove();
-
-        // Draw circles
+        // Select and update existing bars
         const barGroups = svg.selectAll(".bar-group")
-          .data(data)
-          .enter()
+          .data(filteredData, d => d[0]);
+
+        barGroups.exit().remove(); // Remove bars for data that no longer exists
+
+        barGroups.enter()
           .append("g")
-          .attr("class", "bar-group");
+          .attr("class", "bar-group")
+          .merge(barGroups)
+          .each(function(groupData, i) {
+            const group = d3.select(this);
+            const circles = group.selectAll(".circle-group")
+              .data(groupData[1]);
 
-        barGroups.each(function(groupData, i) {
-          const group = d3.select(this);
-          const circles = group.selectAll("circle")
-            .data(groupData[1]);
+            circles.exit().remove(); // Remove circles for data that no longer exists
 
-          circles.enter()
-            .append("g")
-            .attr("class", "circle-group")
-            .each(function(d, i) {
-              const citationRadius = Math.max(5, Math.min(yScale.bandwidth(), citationScale(parseFloat(d.Citations))));
-              const circleGroup = d3.select(this);
-              circleGroup.append("circle")
-                .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
-                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                .attr("r", citationRadius)
-                .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
-                .attr("fill-opacity", 0.3)
-                .attr("original-fill", statusColors[d.Status])
-                .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
-              circleGroup.append("circle")
-                .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
-                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                .attr("r", 5)
-                .attr("fill", statusColors[d.Status])
-                .attr("original-fill", statusColors[d.Status])
-                .on("mouseover", function(event, d) {
-                  d3.select(this.parentNode).selectAll("circle")
-                    .attr("fill", "yellow"); // Change fill color to yellow
-                  // Display row information
-                  d3.select("#DOI").text(d.DOI);
-                  d3.select("#Title").text(d.Title);
-                  d3.select("#Journal_Name").text(d.Journal_Name);
-                  d3.select("#Status").text(d.Status);
-                  d3.select("#DOI_Status").text(d.DOI_Status);
-                })
-                .on("mouseout", function(event, d) {
-                  d3.select(this.parentNode).selectAll("circle")
-                    .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
-                  // Clear info box
-                  // const infoBox = d3.select("#info-box");
-                  // infoBox.text("");
-                });
-            });
-        });
+            circles.enter()
+              .append("g")
+              .attr("class", "circle-group")
+              .merge(circles)
+              .each(function(d, i) {
+                const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
+                //const citationRadius = Math.max(5, Math.min(maxRadius, citationScale(parseFloat(d.Citations))));
+                const citationRadius = citationScale(parseFloat(d.Citations))
+                //const citationRadius = Math.max(5, yScale.bandwidth() / 2);
+                const circleGroup = d3.select(this);
+                circleGroup.selectAll("circle").remove(); // Remove existing circles
+                circleGroup.append("circle")
+                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
+                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                  .attr("r", citationRadius)
+                  .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
+                  .attr("fill-opacity", 0.3)
+                  .attr("original-fill", statusColors[d.Status])
+                  .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
+                circleGroup.append("circle")
+                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
+                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                  .attr("r", 5)
+                  .attr("fill", statusColors[d.Status])
+                  .attr("original-fill", statusColors[d.Status])
+                  .on("mouseover", function(event, d) {
+                    console.log("d")
+                    console.dir(d)
+                    d3.select(this.parentNode).selectAll("circle")
+                      .attr("fill", "yellow"); // Change fill color to yellow
+                    // Display row information
+                    d3.select("#DOI").text(d.DOI);
+                    d3.select("#Title").text(d.Title);
+                    d3.select("#Journal_Name").text(d.Journal_Name);
+                    d3.select("#Status").text(d.Status);
+                    d3.select("#IRB_Number").text(d.IRB_Number);
+                    d3.select("#Citations").text(d.Citations);
+                    d3.select("#DOI_Status").text(d.DOI_Status);
+                  })
+                  .on("mouseout", function(event, d) {
+                    d3.select(this.parentNode).selectAll("circle")
+                      .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
+                    // Clear info box
+                    // const infoBox = d3.select("#info-box");
+                    // infoBox.text("");
+                  });
+              });
+          });
       }
+
+      updateVisualization(); // Draw initial visualization
 
     }).catch(error => {
       console.error('Error fetching the data:', error);
