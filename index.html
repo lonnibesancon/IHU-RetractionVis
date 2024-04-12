@@ -65,46 +65,51 @@
 <body>
   <div id="general-box">
     <div id="interaction-info-container">
-        <div id="interaction-box">
-            <p>This is the infobox - This is the infobox - This is the infobox</p>
-            <p>This is the infobox - This is the infobox - This is the infobox</p>
+      <div id="interaction-box">
+        <p>This is the infobox - This is the infobox - This is the infobox</p>
+        <p>This is the infobox - This is the infobox - This is the infobox</p>
+      </div>
+      <div>
+        <div id="grouped-checkbox-container">
+          <input type="checkbox" id="grouped-checkbox">
+          <label for="grouped-checkbox">Grouped</label>
+          <p>IRB Number:<select id="IRBNumberSelect">
+              <!-- Options will be added dynamically using D3.js -->
+          </select></p>
         </div>
-        <div id="info-box">
-          <table id="info-table">
-              <tbody>
-                  <tr>
-                      <td>DOI:</td>
-                      <td id="DOI"></td>
-                  </tr>
-                  <tr>
-                      <td>Title</td>
-                      <td id="Title"></td>
-                  </tr>
-                  <tr>
-                      <td>Journal Name</td>
-                      <td id="Journal_Name"></td>
-                  </tr>
-                  <tr>
-                      <td>Status</td>
-                      <td id="Status"></td>
-                  </tr>
-                  <tr>
-                      <td>Link to Status Update</td>
-                      <td id="DOI_Status"></td>
-                  </tr>
-              </tbody>
-          </table>
-        </div>
+      </div>
+      <div id="info-box">
+        <table id="info-table">
+          <tbody>
+            <tr>
+              <td>DOI:</td>
+              <td id="DOI"></td>
+            </tr>
+            <tr>
+              <td>Title</td>
+              <td id="Title"></td>
+            </tr>
+            <tr>
+              <td>Journal Name</td>
+              <td id="Journal_Name"></td>
+            </tr>
+            <tr>
+              <td>Status</td>
+              <td id="Status"></td>
+            </tr>
+            <tr>
+              <td>Link to Status Update</td>
+              <td id="DOI_Status"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div id="grouped-checkbox-container">
-        <input type="checkbox" id="grouped-checkbox">
-        <label for="grouped-checkbox">Grouped</label>
-    </div>
-</div>
-<div id="graph-container">
+  </div>
+  <div id="graph-container">
     <svg id="chart"></svg>
     <div class="legend" id="legend"></div>
-</div>
+  </div>
 
   <script>
     // Google Spreadsheet URL
@@ -182,97 +187,84 @@
         .selectAll(".tick text")
         .call(wrap, margin.left - 10);
 
+      let filteredData = sortedGroupedData; // Initialize filteredData with all data
 
+      // Create a dropdown menu or selection field in your HTML
+      const selectIRBNumber = d3.select("#IRBNumberSelect")
+          .on("change", function() {
+            const selectedIRBNumber = this.value; // Get the selected IRB_Number value
+            if (selectedIRBNumber === "All") {
+              filteredData = sortedGroupedData; // Show all data
+            } else {
+              filteredData = sortedGroupedData.filter(d => d[1].some(item => item.IRB_Number === selectedIRBNumber)); // Filter data based on selected IRB_Number
+            }
+            updateVisualization(filteredData);
+          });
 
-      // Draw circles
-      svg.selectAll(".bar-group")
-        .data(sortedGroupedData)
-        .enter()
-        .append("g")
-        .attr("class", "bar-group")
-        .each(function(groupData, i) {
-          const group = d3.select(this);
-          group.selectAll("circle")
-            .data(groupData[1])
-            .enter()
-            .append("g")
-            .attr("class", "circle-group")
-            .each(function(d, i) {
-              const citationRadius = Math.max(5, Math.min(yScale.bandwidth(), citationScale(parseFloat(d.Citations))));
-              const circleGroup = d3.select(this);
-              circleGroup.append("circle")
-                .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar //Cannot use (d,i) here because we want the i from the parent function
-                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                .attr("r", citationRadius)
-                .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
-                .attr("fill-opacity", 0.3)
-                .attr("original-fill", statusColors[d.Status])
-                .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
-              circleGroup.append("circle")
-                .attr("cx", (d) => {  //Cannot use (d,i) here because we want the i from the parent function
-                    return (xScale(i+1)) // Set the x position to the middle of the bar
-                 })
-                .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                .attr("r", 5)
-                .attr("fill", statusColors[d.Status])
-                .attr("original-fill", statusColors[d.Status])
-                .on("mouseover", function(event, d) {
-                  d3.select(this.parentNode).selectAll("circle")
-                    .attr("fill", "yellow"); // Change fill color to yellow
-                  // Display row information
-                  let targetElement = d3.select("#DOI");
-                  targetElement.text(d.DOI);
-                  targetElement = d3.select("#Title");
-                  targetElement.text(d.Title);
-                  targetElement = d3.select("#Journal_Name");
-                  targetElement.text(d.Journal_Name);
-                  targetElement = d3.select("#Status");
-                  targetElement.text(d.Status);
-                  targetElement = d3.select("#DOI_Status");
-                  targetElement.text(d.DOI_Status);
-                })
-                .on("mouseout", function(event, d) {
-                  d3.select(this.parentNode).selectAll("circle")
-                    .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
-                  // Clear info box
-                  //const infoBox = d3.select("#info-box");
-                  //infoBox.text("");
-                });
-            });
+      // Add an option for "All" IRB_Numbers
+      selectIRBNumber.append("option").text("All").attr("value", "All");
 
-          /*
+      // Add options for each unique IRB_Number
+      const uniqueIRBNumbers = Array.from(new Set(data.map(d => d.IRB_Number)));
+      uniqueIRBNumbers.forEach(number => {
+        selectIRBNumber.append("option").text(number).attr("value", number);
+      });
+
+      // Function to update visualization
+      function updateVisualization(data) {
+        // Remove existing circles
+        svg.selectAll(".bar-group").remove();
+
+        // Draw circles
+        svg.selectAll(".bar-group")
+          .data(data)
+          .enter()
+          .append("g")
+          .attr("class", "bar-group")
           .each(function(groupData, i) {
             const group = d3.select(this);
             group.selectAll("circle")
               .data(groupData[1])
               .enter()
-              .append("circle")
-              .attr("cx", (d, i) => xScale(i) + xScale(1) / 2) // Set the x position to the middle of the bar
-              .attr("cy", (d,i) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-              .attr("r", yScale.bandwidth() / 2) // Size based on yScale bandwidth
-              .attr("fill", d => statusColors[d.Status]) // Fill color based on status
-              .on("mouseover", function(event, d) {
-                // Display row information
-                let targetElement = d3.select("#DOI");
-                targetElement.text(d.DOI);
-                targetElement = d3.select("#Title");
-                targetElement.text(d.Title);
-                targetElement = d3.select("#Journal_Name");
-                targetElement.text(d.Journal_Name);
-                targetElement = d3.select("#Status");
-                targetElement.text(d.Status);
-                targetElement = d3.select("#DOI_Status");
-                targetElement.text(d.DOI_Status);
-              })
-              .on("mouseout", function(event, d) {
-                // Clear info box
-                //const infoBox = d3.select("#info-box");
-                //infoBox.text("");
+              .append("g")
+              .attr("class", "circle-group")
+              .each(function(d, i) {
+                const citationRadius = Math.max(5, Math.min(yScale.bandwidth(), citationScale(parseFloat(d.Citations))));
+                const circleGroup = d3.select(this);
+                circleGroup.append("circle")
+                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
+                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                  .attr("r", citationRadius)
+                  .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
+                  .attr("fill-opacity", 0.3)
+                  .attr("original-fill", statusColors[d.Status])
+                  .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
+                circleGroup.append("circle")
+                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
+                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
+                  .attr("r", 5)
+                  .attr("fill", statusColors[d.Status])
+                  .attr("original-fill", statusColors[d.Status])
+                  .on("mouseover", function(event, d) {
+                    d3.select(this.parentNode).selectAll("circle")
+                      .attr("fill", "yellow"); // Change fill color to yellow
+                    // Display row information
+                    d3.select("#DOI").text(d.DOI);
+                    d3.select("#Title").text(d.Title);
+                    d3.select("#Journal_Name").text(d.Journal_Name);
+                    d3.select("#Status").text(d.Status);
+                    d3.select("#DOI_Status").text(d.DOI_Status);
+                  })
+                  .on("mouseout", function(event, d) {
+                    d3.select(this.parentNode).selectAll("circle")
+                      .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
+                    // Clear info box
+                    // const infoBox = d3.select("#info-box");
+                    // infoBox.text("");
+                  });
               });
-        });*/
-
-
-        });
+          });
+      }
 
       // Add legend
       const legend = d3.select("#legend");
@@ -283,12 +275,6 @@
           .attr("class", "legend-item__color")
           .style("background-color", color);
         legendItem.append("span").text(status);
-      });
-
-      // Add event listener for the checkbox
-      d3.select("#grouped-checkbox").on("change", function() {
-        const isChecked = d3.select(this).property("checked");
-        // Your code to handle checkbox state here
       });
 
     }).catch(error => {
