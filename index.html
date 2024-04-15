@@ -260,77 +260,79 @@
           .style("background-color", color);
         legendItem.append("span").text(status);
       });
+function updateVisualization() {
+    // Update yScale domain based on filteredData
+    yScale.domain(filteredData.map(d => d[0]));
 
-      function updateVisualization() {
-        // Update yScale domain based on filteredData
-        yScale.domain(filteredData.map(d => d[0]));
+    // Select and update existing bars
+    const barGroups = svg.selectAll(".bar-group")
+        .data(filteredData, d => d[0]);
 
-        // Select and update existing bars
-        const barGroups = svg.selectAll(".bar-group")
-          .data(filteredData, d => d[0]);
+    barGroups.exit()
+        .transition()
+        .duration(500)
+        .remove(); // Remove bars for data that no longer exists
 
-        barGroups.exit().remove(); // Remove bars for data that no longer exists
+    const enterBars = barGroups.enter()
+        .append("g")
+        .attr("class", "bar-group");
 
-        barGroups.enter()
-          .append("g")
-          .attr("class", "bar-group")
-          .merge(barGroups)
-          .each(function(groupData, i) {
-            const group = d3.select(this);
-            const circles = group.selectAll(".circle-group")
-              .data(groupData[1]);
+    // Calculate citation radius
+    const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
+    const citationScale = d3.scaleLinear()
+        .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d.Citations))])
+        .range([5, maxRadius]);
 
-            circles.exit().remove(); // Remove circles for data that no longer exists
+    // For circle-citation
+    const circlesCitation = enterBars.merge(barGroups)
+        .selectAll(".circle-citation")
+        .data(d => d[1]);
 
-            circles.enter()
-              .append("g")
-              .attr("class", "circle-group")
-              .merge(circles)
-              .each(function(d, i) {
-                const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
-                //const citationRadius = Math.max(5, Math.min(maxRadius, citationScale(parseFloat(d.Citations))));
-                const citationRadius = citationScale(parseFloat(d.Citations))
-                //const citationRadius = Math.max(5, yScale.bandwidth() / 2);
-                const circleGroup = d3.select(this);
-                circleGroup.selectAll("circle").remove(); // Remove existing circles
-                circleGroup.append("circle")
-                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
-                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                  .attr("r", citationRadius)
-                  .attr("fill", d3.color(statusColors[d.Status]).brighter(0.5))
-                  .attr("fill-opacity", 0.3)
-                  .attr("original-fill", statusColors[d.Status])
-                  .style("pointer-events", "none"); // Make the larger circles transparent to mouse events                
-                circleGroup.append("circle")
-                  .attr("cx", (d) => xScale(i+1)) // Set the x position to the middle of the bar
-                  .attr("cy", (d) => yScale(groupData[0]) + yScale.bandwidth() / 2) // Set the y position to the middle of the bar
-                  .attr("r", 5)
-                  .attr("fill", statusColors[d.Status])
-                  .attr("original-fill", statusColors[d.Status])
-                  .on("mouseover", function(event, d) {
-                    console.log("d")
-                    console.dir(d)
-                    d3.select(this.parentNode).selectAll("circle")
-                      .attr("fill", "yellow"); // Change fill color to yellow
-                    // Display row information
-                    d3.select("#DOI").text(d.DOI);
-                    d3.select("#Title").text(d.Title);
-                    d3.select("#Journal_Name").text(d.Journal_Name);
-                    d3.select("#Status").text(d.Status);
-                    d3.select("#IRB_Number").text(d.IRB_Number);
-                    d3.select("#Citations").text(d.Citations);
-                    d3.select("#DOI_Status").text(d.DOI_Status);
-                  })
-                  .on("mouseout", function(event, d) {
-                    d3.select(this.parentNode).selectAll("circle")
-                      .attr("fill", function(d) { return d3.select(this).attr("original-fill"); });
-                    // Clear info box
-                    // const infoBox = d3.select("#info-box");
-                    // infoBox.text("");
-                  });
-              });
-          });
-      }
+    circlesCitation.exit()
+        .transition()
+        .duration(500)
+        .attr("r", 0)
+        .remove(); // Remove circles for data that no longer exists
+
+    circlesCitation.enter()
+        .append("circle")
+        .attr("class", "circle-citation")
+        .attr("r", 0) // Set initial radius to 0 for smooth transition
+        .merge(circlesCitation)
+        .transition()
+        .duration(500)
+        .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+        .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
+        .attr("r", d => citationScale(parseFloat(d.Citations)))
+        .attr("fill", d => d3.color(statusColors[d.Status]).brighter(0.5))
+        .attr("fill-opacity", 0.3)
+        .attr("original-fill", d => statusColors[d.Status])
+        .style("pointer-events", "none");
+
+    // For circle-point
+    const circlesPoint = enterBars.merge(barGroups)
+        .selectAll(".circle-point")
+        .data(d => d[1]);
+
+    circlesPoint.exit()
+        .transition()
+        .duration(500)
+        .attr("r", 0)
+        .remove(); // Remove circles for data that no longer exists
+
+    circlesPoint.enter()
+        .append("circle")
+        .attr("class", "circle-point")
+        .attr("r", 0) // Set initial radius to 0 for smooth transition
+        .merge(circlesPoint)
+        .transition()
+        .duration(500)
+        .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+        .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
+        .attr("r", 5)
+        .attr("fill", d => statusColors[d.Status])
+        .attr("original-fill", d => statusColors[d.Status]);
+}
 
       updateVisualization(); // Draw initial visualization
 
