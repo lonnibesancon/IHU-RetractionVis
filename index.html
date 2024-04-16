@@ -76,6 +76,12 @@
           <p>IRB Number:<select id="IRBNumberSelect">
               <!-- Options will be added dynamically using D3.js -->
           </select></p>
+          <p>Citation Type:
+            <select id="citationType">
+              <option value="Citations">Citations</option>
+              <option value="Self_Citations">Self Citations</option>
+            </select>
+          </p>
         </div>
       </div>
       <div id="info-box">
@@ -262,8 +268,18 @@
       });
 
 
+      const selectCitationType = d3.select("#citationType")
+        .on("change", function() {
+          const selectedCitationType = this.value;
+          // Update citation scale based on selected value
+          //citationScale.domain([0, d3.max(data, d => parseFloat(d[selectedCitationType]))]);
+          console.log("UPDATE")
+          updateVisualization(this.value);
+        });
 
-      function updateVisualization() {
+
+
+      function updateVisualization(selectCitation) {
           // Update yScale domain based on filteredData
           yScale.domain(filteredData.map(d => d[0]));
 
@@ -284,10 +300,14 @@
           // Calculate citation radius
           const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
           const citationScale = d3.scaleLinear()
-              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d.Citations))])
+              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => {
+                console.log(d)
+                console.log("d[selectCitation] = "+d[selectCitation])
+                return parseFloat(d[selectCitation])
+              })])
               .range([5, maxRadius]);
 
-
+          console.log("maxRadius = " + maxRadius)
 
           // For circle-point
           const circlesPoint = enterBars.merge(barGroups)
@@ -334,7 +354,7 @@
               .merge(circlesCitation)
               .transition()
               .duration(500)
-              .attr("r", d => citationScale(parseFloat(d.Citations)))
+              .attr("r", d => citationScale(parseFloat(d[selectCitation])))
               .attr("fill", d => d3.color(statusColors[d.Status]))
               .attr("fill-opacity", 0.3)
               .attr("original-fill", d => statusColors[d.Status])
@@ -362,7 +382,7 @@
 
       }
 
-      updateVisualization(); // Draw initial visualization
+      updateVisualization("Citations"); // Draw initial visualization
 
     }).catch(error => {
       console.error('Error fetching the data:', error);
