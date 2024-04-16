@@ -1,0 +1,53 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  flex-direction: column;
+}
+
+#general-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#interaction-info-container {
+  display: flex;
+}
+
+#interaction-box {
+  width: 60%;
+}
+
+#info-box {
+  width: 40%;
+}
+
+#graph-container {
+  margin-top: 20px;
+}
+
+#chart {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.legend-item__color {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
