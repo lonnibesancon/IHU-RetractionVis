@@ -149,6 +149,9 @@
     };
 
 
+    let selectedCitation = "Citations";
+
+
     // Fetch the data from the Google Spreadsheet
     d3.csv(spreadsheetUrl).then(data => {
       // Sort the data by Journal_Name and then by Status
@@ -217,6 +220,9 @@
 
       let filteredData = sortedGroupedData; // Initialize filteredData with all data
 
+      var log_scale_checkbox = d3.select("#log-scale-checkbox")
+      log_scale_checkbox.on("change",updateVisualization)
+
       // Create a dropdown menu or selection field in your HTML
       const selectIRBNumber = d3.select("#IRBNumberSelect")
         .on("change", function() {
@@ -279,18 +285,20 @@
       });
 
 
-      const selectCitationType = d3.select("#citationType")
+      selectCitationType = d3.select("#citationType")
         .on("change", function() {
-          const selectedCitationType = this.value;
           // Update citation scale based on selected value
           //citationScale.domain([0, d3.max(data, d => parseFloat(d[selectedCitationType]))]);
           console.log("UPDATE")
-          updateVisualization(this.value);
+          updateVisualization();
         });
 
 
 
-      function updateVisualization(selectCitation) {
+      function updateVisualization() {
+
+          selectedCitation = d3.select("#citationType").property("value")
+
           // Update yScale domain based on filteredData
           yScale.domain(filteredData.map(d => d[0]));
 
@@ -315,13 +323,15 @@
           if (document.getElementById("log-scale-checkbox").checked) {
             citationScale = d3.scaleLog()
               .base(10)
-              .domain([1, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
+              .domain([1, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
               .range([5, Math.pow(maxRadius, 2)]);
           } else {
             citationScale = d3.scaleLinear()
-              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
+              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
               .range([5, Math.pow(maxRadius, 2)]);
           }
+
+
           /*const citationScale = d3.scaleLinear()
             .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
             .range([5, Math.pow(maxRadius, 2)]); // Scale the range to the square of the maximum radius*/
@@ -372,7 +382,7 @@
               .merge(circlesCitation)
               .transition()
               .duration(500)
-              .attr("r", d => Math.sqrt(citationScale(parseFloat(d[selectCitation])))) // Scale the radius based on the square root
+              .attr("r", d => Math.sqrt(citationScale(parseFloat(d[selectedCitation])))) // Scale the radius based on the square root
               .attr("fill", d => d3.color(statusColors[d.Status]))
               .attr("fill-opacity", 0.3)
               .attr("original-fill", d => statusColors[d.Status])
