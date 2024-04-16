@@ -73,6 +73,9 @@
         <div id="grouped-checkbox-container">
           <input type="checkbox" id="grouped-checkbox">
           <label for="grouped-checkbox">Grouped</label>
+          
+          <input type="checkbox" id="log-scale-checkbox">
+          <label for="log-scale-checkbox">Use Log Scale</label>
           <p>IRB Number:<select id="IRBNumberSelect">
               <!-- Options will be added dynamically using D3.js -->
           </select></p>
@@ -145,6 +148,7 @@
       'EoC': '#fab0a7'
     };
 
+
     // Fetch the data from the Google Spreadsheet
     d3.csv(spreadsheetUrl).then(data => {
       // Sort the data by Journal_Name and then by Status
@@ -197,9 +201,7 @@
       // Set yScale domain after data is loaded
       yScale.domain(sortedGroupedData.map(d => d[0]));
 
-      const citationScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => parseFloat(d.Citations))])
-        .range([5, yScale.bandwidth()/2]);
+      
 
       // Draw x-axis
       svg.append("g")
@@ -306,11 +308,23 @@
               .attr("class", "bar-group")
 
 
+
            // Calculate citation scale
           const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
-          const citationScale = d3.scaleLinear()
+          let citationScale;
+          if (document.getElementById("log-scale-checkbox").checked) {
+            citationScale = d3.scaleLog()
+              .base(10)
+              .domain([1, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
+              .range([5, Math.pow(maxRadius, 2)]);
+          } else {
+            citationScale = d3.scaleLinear()
+              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
+              .range([5, Math.pow(maxRadius, 2)]);
+          }
+          /*const citationScale = d3.scaleLinear()
             .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
-            .range([5, Math.pow(maxRadius, 2)]); // Scale the range to the square of the maximum radius
+            .range([5, Math.pow(maxRadius, 2)]); // Scale the range to the square of the maximum radius*/
 
 
           // For circle-point
