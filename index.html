@@ -80,6 +80,7 @@
             <select id="citationType">
               <option value="Citations">Citations</option>
               <option value="Self_Citations">Self Citations</option>
+              <option value="Altmetrics">Altmetrics</option>
             </select>
           </p>
         </div>
@@ -106,6 +107,14 @@
             <tr>
               <td>Citations</td>
               <td id="Citations"></td>
+            </tr>
+            <tr>
+              <td>Self-citations</td>
+              <td id="Self_Citations"></td>
+            </tr>
+            <tr>
+              <td>Altmetrics</td>
+              <td id="Altmetrics"></td>
             </tr>
             <tr>
               <td>IRB Number</td>
@@ -297,17 +306,12 @@
               .attr("class", "bar-group")
 
 
-          // Calculate citation radius
+           // Calculate citation scale
           const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
           const citationScale = d3.scaleLinear()
-              .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => {
-                console.log(d)
-                console.log("d[selectCitation] = "+d[selectCitation])
-                return parseFloat(d[selectCitation])
-              })])
-              .range([5, maxRadius]);
+            .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectCitation]))])
+            .range([5, Math.pow(maxRadius, 2)]); // Scale the range to the square of the maximum radius
 
-          console.log("maxRadius = " + maxRadius)
 
           // For circle-point
           const circlesPoint = enterBars.merge(barGroups)
@@ -354,7 +358,7 @@
               .merge(circlesCitation)
               .transition()
               .duration(500)
-              .attr("r", d => citationScale(parseFloat(d[selectCitation])))
+              .attr("r", d => Math.sqrt(citationScale(parseFloat(d[selectCitation])))) // Scale the radius based on the square root
               .attr("fill", d => d3.color(statusColors[d.Status]))
               .attr("fill-opacity", 0.3)
               .attr("original-fill", d => statusColors[d.Status])
@@ -397,6 +401,8 @@
         d3.select("#Status").text(d.Status);
         d3.select("#IRB_Number").text(d.IRB_Number);
         d3.select("#Citations").text(d.Citations);
+        d3.select("#Self_Citations").text(d.Self_Citations);
+        d3.select("#Altmetrics").text(d.Altmetrics);
         d3.select("#DOI_Status").text(d.DOI_Status);
     }
 
