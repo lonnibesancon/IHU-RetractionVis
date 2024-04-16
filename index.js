@@ -172,7 +172,8 @@ d3.csv(spreadsheetUrl).then(data => {
       // Calculate citation scale
       const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
       let citationScale;
-      if (document.getElementById("log-scale-checkbox").checked) {
+      const is_log_scale = document.getElementById("log-scale-checkbox").checked
+      if (is_log_scale) {
         citationScale = d3.scaleLog()
           .base(10)
           .domain([1, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
@@ -183,6 +184,11 @@ d3.csv(spreadsheetUrl).then(data => {
           .range([5, Math.pow(maxRadius, 2)]);
       }
 
+      /*console.log("is_log_scale = "+is_log_scale)
+      console.log("citationScale.range() = "+citationScale.range())
+      console.log("citationScale.domain() = "+citationScale.domain())
+      console.log("citationScale(0) = " + citationScale(0))*/
+
       // For circle-point
       const circlesPoint = enterBars.merge(barGroups)
           .selectAll(".circle-point")
@@ -192,7 +198,7 @@ d3.csv(spreadsheetUrl).then(data => {
           .transition()
           .duration(700)
           .attr("r", 0)
-          .remove(); // Remove circles for data that no longer exists
+          .remove(); // Remove circles for data that no longer exists 
 
       circlesPoint.enter()
           .append("circle")
@@ -228,7 +234,16 @@ d3.csv(spreadsheetUrl).then(data => {
           .merge(circlesCitation)
           .transition()
           .duration(500)
-          .attr("r", d => Math.sqrt(citationScale(parseFloat(d[selectedCitation])))) // Scale the radius based on the square root
+          .attr("r", d => {
+            if(is_log_scale){
+              if(parseFloat(d[selectedCitation]) == 0){
+                console.log("This is a 0 case")
+                console.dir(d)
+                return 5;  
+              }
+            }
+            return Math.sqrt(citationScale(parseFloat(d[selectedCitation])))
+          }) // Scale the radius based on the square root
           .attr("fill", d => d3.color(statusColors[d.Status]))
           .attr("fill-opacity", 0.3)
           .attr("original-fill", d => statusColors[d.Status])
