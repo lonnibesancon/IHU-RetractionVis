@@ -296,7 +296,7 @@
 
           circlesPoint.exit()
               .transition()
-              .duration(500)
+              .duration(700)
               .attr("r", 0)
               .remove(); // Remove circles for data that no longer exists
 
@@ -304,11 +304,11 @@
               .append("circle")
               .attr("class", "circle-point")
               .attr("r", 0) // Set initial radius to 0 for smooth transition
+              .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+              .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
               .merge(circlesPoint)
               .transition()
               .duration(500)
-              .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
-              .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
               .attr("r", 5)
               .attr("fill", d => statusColors[d.Status])
               .attr("original-fill", d => statusColors[d.Status])
@@ -321,7 +321,7 @@
 
           circlesCitation.exit()
               .transition()
-              .duration(500)
+              .duration(700)
               .attr("r", 0)
               .remove(); // Remove circles for data that no longer exists
 
@@ -329,11 +329,11 @@
               .append("circle")
               .attr("class", "circle-citation")
               .attr("r", 0) // Set initial radius to 0 for smooth transition
+              .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+              .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
               .merge(circlesCitation)
               .transition()
               .duration(500)
-              .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
-              .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
               .attr("r", d => citationScale(parseFloat(d.Citations)))
               .attr("fill", d => d3.color(statusColors[d.Status]))
               .attr("fill-opacity", 0.3)
