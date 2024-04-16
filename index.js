@@ -4,8 +4,8 @@ const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZMRkkQ
 // Define colors for each status
 const statusColors = {
   'N/A': "#303bc9",
+  'EoC': '#fec44f',
   'Retraction': '#e02d19',
-  'EoC': '#fab0a7'
 };
 
 let selectedCitation = "Citations";
