@@ -5,7 +5,7 @@ const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZMRkkQ
 const statusColors = {
   'N/A': "#303bc9",
   'EoC': '#fec44f',
-  'Retraction': '#e02d19',
+  'Retracted': '#e02d19',
 };
 
 let selectedCitation = "Citations";
@@ -15,7 +15,7 @@ d3.csv(spreadsheetUrl).then(data => {
   // Sort the data by Journal_Name and then by Status
   data.sort((a, b) => {
     // Define the desired order
-    const order = ['N/A', 'EoC', 'Retraction'];
+    const order = ['N/A', 'EoC', 'Retracted'];
     
     // Get the index of status in the desired order
     const statusIndexA = order.indexOf(a.Status);
@@ -36,12 +36,27 @@ d3.csv(spreadsheetUrl).then(data => {
   // Sort groupedData by total count in increasing order
   const sortedGroupedData = Array.from(groupedData.entries()).sort((a, b) => b[1].length - a[1].length);
 
+
   // Calculate maximum count for x axis
   const maxCount = d3.max(sortedGroupedData, d => d[1].length);
 
+
+  // Define default min_value as 1 if not specified
+  //let min_value = min || 1;
+  let min_value = 10
+
+  // Define default max_value as the maximum count if not specified
+  //let max_value = max || maxCount;
+
+  //let max_value = maxCount;
+  let max_value = 14;
+
+
+
+
   // D3.js code for visualization
   const margin = { top: 20, right: 20, bottom: 50, left: 100 };
-  const width = 800 - margin.left - margin.right;
+  const width = 2000 - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
 
   const svg = d3.select("#chart")
@@ -59,8 +74,7 @@ d3.csv(spreadsheetUrl).then(data => {
     .range([0, height])
     .padding(0.1);
 
-  // Set yScale domain after data is loaded
-  yScale.domain(sortedGroupedData.map(d => d[0]));
+  
 
   // Draw x-axis
   svg.append("g")
@@ -75,6 +89,18 @@ d3.csv(spreadsheetUrl).then(data => {
     .call(wrap, margin.left - 10);
 
   let filteredData = sortedGroupedData; // Initialize filteredData with all data
+  // Filter sortedGroupedData based on min_value and max_value
+  filteredData = sortedGroupedData.filter(entry => {
+      const count = entry[1].length;
+      return count >= min_value && count <= max_value;
+  });
+
+  console.log("filteredData")
+  console.dir(filteredData)
+
+
+  // Set yScale domain after data is loaded and filtered
+  yScale.domain(sortedGroupedData.map(d => d[0]));
 
   var log_scale_checkbox = d3.select("#log-scale-checkbox")
   log_scale_checkbox.on("change",updateVisualization)
@@ -144,7 +170,7 @@ d3.csv(spreadsheetUrl).then(data => {
   selectCitationType = d3.select("#citationType")
     .on("change", function() {
       // Update citation scale based on selected value
-      //citationScale.domain([0, d3.max(data, d => parseFloat(d[selectedCitationType]))]);
+      //citationScale.domain([0, d3.max(data, d => parseFloat(d[selectedCitation]))]);
       console.log("UPDATE")
       updateVisualization();
     });
@@ -167,107 +193,174 @@ d3.csv(spreadsheetUrl).then(data => {
 
       const enterBars = barGroups.enter()
           .append("g")
-          .attr("class", "bar-group")
+          .attr("class", "bar-group");
 
       // Calculate citation scale
-      const maxRadius = yScale.bandwidth() / 2; // Maximum radius is half of the space available for each bar
-      let citationScale;
-      const is_log_scale = document.getElementById("log-scale-checkbox").checked
-      if (is_log_scale) {
-        citationScale = d3.scaleLog()
-          .base(10)
-          .domain([1, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
-          .range([5, Math.pow(maxRadius, 2)]);
+      const maxRadius = d3.min([yScale.bandwidth() / 2, xScale(1) - xScale(0)]); // Minimum between yScale.bandwidth() and space between two points on x-axis
+
+      const pointRadiusThreshold = 0.01 * width; // 1% of width
+
+      if (!filteredData || filteredData.length === 0) {
+        console.error('Filtered data is undefined or empty');
+        return; // Exit the function if filteredData is undefined or empty
+    }
+
+      console.log("maxRadius = "+ maxRadius)
+      console.log("pointRadiusThreshold = "+ pointRadiusThreshold)
+      if (maxRadius > pointRadiusThreshold) {
+
+
+
+        let barGroups = svg.selectAll(".bar-group")
+            .data(filteredData, d => d[0]);
+
+        console.log('Bar groups:');
+        console.dir(barGroups);
+
+        barGroups.exit()
+            .transition()
+            .duration(500)
+            .remove(); // Remove bars for data that no longer exists
+
+        const enterBars = barGroups.enter()
+            .append("g")
+            .attr("class", "bar-group");
+
+        console.log('Enter bars:');
+        console.dir(enterBars);
+
+        console.log('Data passed to barGroups:');
+        console.dir(barGroups.data());
+
+        // Define barGroups before using it
+        let bars;
+
+        // Update yScale domain based on filteredData
+            yScale.domain(filteredData.map(d => d[0]));
+
+
+
+        bars = enterBars.merge(barGroups)
+            .selectAll(".stacked-bar-group")
+            .data(d => {
+                // Count occurrences of each status for the current Journal_Name
+                const statusCounts = { 'N/A': 0, 'EoC': 0, 'Retracted': 0 };
+                d[1].forEach(item => statusCounts[item.Status]++);
+                // Convert the counts to an array of objects with status and count properties
+                const statusData = Object.entries(statusCounts).map(([status, count]) => ({ status, count }));
+                return [{ Journal_Name: d[0], statusData }];
+            });
+
+      const barGroupsEnter = bars.enter()
+          .append("g")
+          .attr("class", "stacked-bar-group")
+          .attr("transform", d => `translate(${xScale(0)}, ${yScale(d.Journal_Name)})`);
+
+      barGroups = barGroupsEnter.merge(barGroups);
+
+      const stackedBars = barGroups.selectAll(".stacked-bar")
+          .data((d) => (d.statusData || [])) // Use default empty array if statusData is undefined
+          .enter()
+          .append("rect")
+          .attr("class", "stacked-bar")
+          .attr("x", (d, i, nodes) => {
+              // Get the parent data object
+              const parentData = d3.select(nodes[i].parentNode).datum();
+              console.dir(parentData)
+              let prevWidth = 0;
+              if (i > 0) {
+                  prevWidth = d3.sum(parentData.statusData.slice(0, i), (item) => item.count); // Calculate cumulative width
+              }
+              return xScale(prevWidth);
+          })
+          .attr("y", 0) // Align the bars at the top of each group
+          .attr("width", (d) => xScale(d.count)) // Set width based on count
+          .attr("height", yScale.bandwidth()) // Set a fixed height for each stack
+          .attr("fill", (d) => statusColors[d.status]);
+
+
       } else {
-        citationScale = d3.scaleLinear()
+        // Draw circles
+        const citationScale = d3.scaleLinear()
           .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
           .range([5, Math.pow(maxRadius, 2)]);
-      }
 
-      /*console.log("is_log_scale = "+is_log_scale)
-      console.log("citationScale.range() = "+citationScale.range())
-      console.log("citationScale.domain() = "+citationScale.domain())
-      console.log("citationScale(0) = " + citationScale(0))*/
+        // For circle-point
+        const circlesPoint = enterBars.merge(barGroups)
+            .selectAll(".circle-point")
+            .data(d => d[1]);
 
-      // For circle-point
-      const circlesPoint = enterBars.merge(barGroups)
-          .selectAll(".circle-point")
-          .data(d => d[1]);
+        circlesPoint.exit()
+            .transition()
+            .duration(700)
+            .attr("r", 0)
+            .remove(); // Remove circles for data that no longer exists 
 
-      circlesPoint.exit()
-          .transition()
-          .duration(700)
-          .attr("r", 0)
-          .remove(); // Remove circles for data that no longer exists 
+        circlesPoint.enter()
+            .append("circle")
+            .attr("class", "circle-point")
+            .attr("r", 0) // Set initial radius to 0 for smooth transition
+            .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+            .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
+            .merge(circlesPoint)
+            .transition()
+            .duration(500)
+            .attr("r", 5)
+            .attr("fill", d => statusColors[d.Status])
+            .attr("original-fill", d => statusColors[d.Status])
+            .attr("id", d => "point_"+d.Line_ID);
 
-      circlesPoint.enter()
-          .append("circle")
-          .attr("class", "circle-point")
-          .attr("r", 0) // Set initial radius to 0 for smooth transition
-          .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
-          .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
-          .merge(circlesPoint)
-          .transition()
-          .duration(500)
-          .attr("r", 5)
-          .attr("fill", d => statusColors[d.Status])
-          .attr("original-fill", d => statusColors[d.Status])
-          .attr("id", d => "point_"+d.DOI)
+        // For circle-citation
+        const circlesCitation = enterBars.merge(barGroups)
+            .selectAll(".circle-citation")
+            .data(d => d[1]);
 
-      // For circle-citation
-      const circlesCitation = enterBars.merge(barGroups)
-          .selectAll(".circle-citation")
-          .data(d => d[1]);
+        circlesCitation.exit()
+            .transition()
+            .duration(700)
+            .attr("r", 0)
+            .remove(); // Remove circles for data that no longer exists
 
-      circlesCitation.exit()
-          .transition()
-          .duration(700)
-          .attr("r", 0)
-          .remove(); // Remove circles for data that no longer exists
-
-      circlesCitation.enter()
-          .append("circle")
-          .attr("class", "circle-citation")
-          .attr("r", 0) // Set initial radius to 0 for smooth transition
-          .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
-          .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
-          .merge(circlesCitation)
-          .transition()
-          .duration(500)
-          .attr("r", d => {
-            if(is_log_scale){
+        circlesCitation.enter()
+            .append("circle")
+            .attr("class", "circle-citation")
+            .attr("r", 0) // Set initial radius to 0 for smooth transition
+            .attr("cx", (d, i) => xScale(i + 1)) // Use the index to determine x position
+            .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2) // Use Journal_Name for y position
+            .merge(circlesCitation)
+            .transition()
+            .duration(500)
+            .attr("r", d => {
               if(parseFloat(d[selectedCitation]) == 0){
                 console.log("This is a 0 case")
                 console.dir(d)
                 return 5;  
               }
-            }
-            return Math.sqrt(citationScale(parseFloat(d[selectedCitation])))
-          }) // Scale the radius based on the square root
-          .attr("fill", d => d3.color(statusColors[d.Status]))
-          .attr("fill-opacity", 0.3)
-          .attr("original-fill", d => statusColors[d.Status])
-          .attr("id", d => "citation_"+d.DOI)
+              return Math.sqrt(citationScale(parseFloat(d[selectedCitation])))
+            }) // Scale the radius based on the square root
+            .attr("fill", d => d3.color(statusColors[d.Status]))
+            .attr("fill-opacity", 0.3)
+            .attr("original-fill", d => statusColors[d.Status])
+            .attr("id", d => "point_"+d.Line_ID);
 
         d3.selectAll(".circle-citation").each(function(d) {
           d3.select(this)
               .on("mouseover", function(event, d) {
                   
-                  d3.select(this).attr("fill", "yellow")
-                  d3.select("#point_"+d.DOI).attr("fill", "yellow")
-                  updateInfo(d)
+                  d3.select(this).attr("fill", "yellow");
+                  d3.select("#point_"+d.Line_ID).attr("fill", "yellow");
+                  updateInfo(d);
 
               })
               .on("mouseout", function(event, d) {
-                  let tmp = d3.select(this)
-                  tmp.attr("fill", tmp.attr("original-fill"))
-                  tmp = d3.select("#point_"+d.DOI)
-                  tmp.attr("fill", tmp.attr("original-fill"))
+                  let tmp = d3.select(this);
+                  tmp.attr("fill", tmp.attr("original-fill"));
+                  tmp = d3.select("#point_"+d.Line_ID);
+                  tmp.attr("fill", tmp.attr("original-fill"));
                   
               });
-      });
-
-
+        });
+      }
   }
 
   updateVisualization("Citations"); // Draw initial visualization
