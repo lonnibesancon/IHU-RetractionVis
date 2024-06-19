@@ -3,73 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IHU-MI Retraction Visualization</title>
+  <title>VIRUS: Visualizing Irregular Research Under Suspicion</title>
   <link rel="stylesheet" href="index.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
+  <h1> </br>VIRUS: Visualizing Irregular Research Under Suspicion </h1>
+  <div id="general-info-box">
+        <p>The ratio of retracted papers to articles published is rising at an alarming rate and towers, nowadays, 0.2%. Most of these retractions are due to the tireless efforts of scientific and academic sleuths who find, track, and report questionable or outright problematic papers on Pubpeer and in correspondence with editors. Questionable or problematic papers can present in a variety of forms, ranging from self-plagiarism to completely fake papers written by ChatGPT or other language models, and include image or data manipulations, paper mill products detected through their use of tortured phrases, or the use of sneaked references.</p>
+        <p>This interactive visualization aims at providing useful information about large set of papers that are being investigated by scientific sleuths. We present it with a specific usecase. We use a dataset of 456 papers from one institute flagged for potential ethical issues in a scientific publication \cite{frank2023raising}. We completed it by adding papers that received concerns on Pubpeer to reach a total of 670 papers. The issues are ranging from lack of approval to run a clinical trial to recruitment starting before approval was obtained and including the questionable duplication of a single ethical approval number in 249 heterogeneous studies.</p>
+  </div>
   <div id="general-box">
     <div id="interaction-info-container">
-      <div id="interaction-box">
-        <p>This is the infobox - This is the infobox - This is the infobox</p>
-        <p>This is the infobox - This is the infobox - This is the infobox</p>
-      </div>
-      <div>
-        <div id="grouped-checkbox-container">
-          <input type="checkbox" id="grouped-checkbox">
-          <label for="grouped-checkbox">Grouped</label>
-          
-          <input type="checkbox" id="log-scale-checkbox">
-          <label for="log-scale-checkbox">Use Log Scale</label>
-          <p>IRB Number:<select id="IRBNumberSelect">
-              <!-- Options will be added dynamically using D3.js -->
-          </select></p>
-          <p>Citation Type:
-            <select id="citationType">
-              <option value="Citations">Citations</option>
-              <option value="Self_Citations">Self Citations</option>
-              <option value="Altmetrics">Altmetrics</option>
-            </select>
-          </p>
-        </div>
+      <div id="grouped-checkbox-container">
+        <h3> Filtering</h3>
+        <input type="checkbox" id="grouped-checkbox">
+        <label for="grouped-checkbox">Grouped</label>
+        
+        <input type="checkbox" id="log-scale-checkbox">
+        <label for="log-scale-checkbox">Use Log Scale</label>
+        <p>IRB Number:<select id="IRBNumberSelect">
+            <!-- Options will be added dynamically using D3.js -->
+        </select></p>
+        <p>Citation Type:
+          <select id="citationType">
+            <option value="Citations">Citations</option>
+            <option value="Self_Citations">Self Citations</option>
+            <option value="Altmetrics">Altmetrics</option>
+          </select>
+        </p>
       </div>
       <div id="info-box">
+        <h3> Paper information</h3>
         <table id="info-table">
           <tbody>
             <tr>
-              <td>DOI:</td>
+              <td class="title_td">DOI:</td>
               <td id="DOI"></td>
             </tr>
             <tr>
-              <td>Title</td>
+              <td class="title_td">Title</td>
               <td id="Title"></td>
             </tr>
             <tr>
-              <td>Journal Name</td>
+              <td class="title_td">Journal Name</td>
               <td id="Journal_Name"></td>
             </tr>
             <tr>
-              <td>Status</td>
+              <td class="title_td">Status</td>
               <td id="Status"></td>
             </tr>
             <tr>
-              <td>Citations</td>
+              <td class="title_td">Citations</td>
               <td id="Citations"></td>
             </tr>
             <tr>
-              <td>Self-citations</td>
+              <td class="title_td">Self-citations</td>
               <td id="Self_Citations"></td>
             </tr>
             <tr>
-              <td>Altmetrics</td>
+              <td class="title_td">Altmetrics</td>
               <td id="Altmetrics"></td>
             </tr>
             <tr>
-              <td>IRB Number</td>
+              <td class="title_td">IRB Number</td>
               <td id="IRB_Number"></td>
             </tr>
             <tr>
-              <td>Link to Status Update</td>
+              <td class="title_td">Link to Status Update</td>
               <td id="DOI_Status"></td>
             </tr>
           </tbody>

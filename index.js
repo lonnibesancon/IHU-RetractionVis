@@ -1,4 +1,5 @@
 const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZMRkkQWNEz6zzcOaI3PwJohV6rqS6cYl5rTJm0LrQb9hthouOMdf4YfuDXr2bDgny9F7fHjSo9S8J/pub?output=csv';
+//const spreadsheetUrl = 'http://127.0.0.1:8080/data/data.csv';
 
 const statusColors = {
   'N/A': "#303bc9",
@@ -235,7 +236,7 @@ function displayCircles(enterBars, barGroups, maxRadius) {
     })
     .transition()
     .duration(500);
-}
+  }
 
 
 

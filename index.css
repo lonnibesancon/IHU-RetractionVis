@@ -1,28 +1,33 @@
 body {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   height: 100vh;
-  margin: 0;
+  margin: 1em;
   flex-direction: column;
+  padding-left: 5%;
+  padding-right: 5%;
 }
 
 #general-box {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  margin-top: 1em;
+}
+
+#general-info-box {
+  width: 100%;
 }
 
 #interaction-info-container {
   display: flex;
-}
-
-#interaction-box {
-  width: 60%;
+  width: 100%;
 }
 
 #info-box {
-  width: 40%;
+  width: 100%;
+  margin-left:1em;
 }
 
 #graph-container {
@@ -38,6 +43,7 @@ body {
 .legend {
   display: flex;
   justify-content: center;
+  margin-bottom: 1.5em;
 }
 
 .legend-item {
@@ -50,4 +56,65 @@ body {
   width: 20px;
   height: 20px;
   margin-right: 5px;
+}
+
+/* Define the base font family and size for the body */
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Style for H1 */
+h1 {
+  font-family: 'Georgia', serif;
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-top: 1em;
+  text-align: center;
+  width: 100%;
+}
+
+/* Style for H2 */
+h2 {
+  font-family: 'Georgia', serif;
+  font-size: 2em;
+  font-weight: bold;
+  color: #34495e;
+  margin-bottom: 0.75em;
+}
+
+/* Style for H3 */
+h3 {
+  font-family: 'Georgia', serif;
+  font-size: 1.75em;
+  font-weight: bold;
+  color: #4f5b66;
+  margin-bottom: 1em;
+}
+
+/* General paragraph style */
+p {
+  margin-bottom: 1.05em;
+}
+
+td.title_td {
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  color: #4f5b66;
+  padding: 0.2em;
+}
+
+/* Style for a */
+a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover, a:focus {
+  color: #2980b9;
+  text-decoration: underline;
 }
