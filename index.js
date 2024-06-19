@@ -260,7 +260,7 @@ function displayCircles(enterBars, barGroups, maxRadius) {
   });
 
 function updateInfo(d) {
-  d3.select("#DOI").text(d.DOI);
+  d3.select("#DOI").html(`<a href="https://doi.org/${d.DOI}" target="_blank">${d.DOI}</a>`);
   d3.select("#Title").text(d.Title);
   d3.select("#Journal_Name").text(d.Journal_Name);
   d3.select("#Status").text(d.Status);
@@ -268,7 +268,11 @@ function updateInfo(d) {
   d3.select("#Citations").text(d.Citations);
   d3.select("#Self_Citations").text(d.Self_Citations);
   d3.select("#Altmetrics").text(d.Altmetrics);
-  d3.select("#DOI_Status").text(d.DOI_Status);
+  if (d.DOI_Status) {
+    d3.select("#DOI_Status").html(`<a href="${d.DOI_Status}" target="_blank">${d.DOI_Status}</a>`);
+  } else {
+    d3.select("#DOI_Status").text('N/A'); // Or any other placeholder text
+  }
 }
 
 
