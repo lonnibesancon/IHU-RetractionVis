@@ -10,6 +10,7 @@ const statusColors = {
 let selectedCitation = "Self_Citations";
 let isGrouped = false;
 let isLogged = false;
+let height_per_journal = 40
 
 d3.csv(spreadsheetUrl)
   .then(data => {
@@ -171,6 +172,14 @@ d3.csv(spreadsheetUrl)
       selectedCitation = d3.select("#citationType").property("value");
       yScale.domain(filteredData.map(d => d[0]));
 
+      const numberOfJournals = yScale.domain().length;
+      const padding = 3
+      const newHeight = numberOfJournals * height_per_journal + padding * numberOfJournals; 
+      d3.select("#chart")
+        .attr("height", newHeight + margin.top + margin.bottom);
+      svg.attr("height", newHeight + margin.top + margin.bottom);
+      yScale.range([0, newHeight]);
+
       const barGroups = svg.selectAll(".bar-group")
         .data(filteredData, d => d[0]);
 
@@ -192,13 +201,14 @@ d3.csv(spreadsheetUrl)
 
       svg.selectAll(".stacked-bar-group, .circle-point, .circle-citation").remove();
 
-      if (isGrouped || maxRadius < pointRadiusThreshold) {
+      //if (isGrouped || maxRadius < pointRadiusThreshold) {
+      if (isGrouped) {
         displayBars(enterBars, barGroups);
       } else {
         displayCircles(enterBars, barGroups, maxRadius);
       }
 
-      updateAxes();
+      updateAxes(newHeight);
     }
 
     function displayBars(enterBars, barGroups) {
@@ -298,11 +308,11 @@ d3.csv(spreadsheetUrl)
     }
 
     updateVisualization();
-    updateAxes();
+    //updateAxes();
 
-    function updateAxes() {
+    function updateAxes(newHeight) {
       svg.select(".x-axis")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + newHeight + ")")
         .call(d3.axisBottom(xScale));
       svg.select(".y-axis")
         .call(d3.axisLeft(yScale).tickSize(0))
