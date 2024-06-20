@@ -68,7 +68,14 @@ d3.csv(spreadsheetUrl)
 
     yScale.domain(sortedGroupedData.map(d => d[0]));
 
-    const selectIRBNumber = d3.select("#IRBNumberSelect")
+    
+
+
+    initiateFilters()
+
+
+    function initiateFilters(){
+      const selectIRBNumber = d3.select("#IRBNumberSelect")
       .on("change", function () {
         const selectedIRBNumber = this.value;
         if (selectedIRBNumber === "All") {
@@ -82,38 +89,83 @@ d3.csv(spreadsheetUrl)
         updateVisualization();
       });
 
-    const selectAuthor = d3.select("#AuthorSelect")
-    .on("change", function () {
-        const selectedAuthor = this.value;
-        if (selectedAuthor === "All") {
-          filteredData = sortedGroupedData;
-        } else {
-          //Still have to implement the logic for it
-          //Logic here is based on logic from IRB
-          filteredData = sortedGroupedData.map(group => {
-            const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
-            return [group[0], filteredItems];
-          });
-        }
-        updateVisualization();
+      const selectAuthor = d3.select("#AuthorSelect")
+      .on("change", function () {
+          const selectedAuthor = this.value;
+          if (selectedAuthor === "All") {
+            filteredData = sortedGroupedData;
+          } else {
+            //Still have to implement the logic for it
+            //Logic here is based on logic from IRB
+            filteredData = sortedGroupedData.map(group => {
+              const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
+              return [group[0], filteredItems];
+            });
+          }
+          updateVisualization();
+        });
+
+      selectIRBNumber.append("option").text("All").attr("value", "All");
+
+      const uniqueIRBNumbers = Array.from(new Set(data.map(d => d.IRB_Number)));
+      uniqueIRBNumbers.forEach(number => {
+        selectIRBNumber.append("option").text(number).attr("value", number);
       });
 
-    selectAuthor.append("option").text("All").attr("value", "All");
-    selectIRBNumber.append("option").text("All").attr("value", "All");
+      selectAuthor.append("option").text("All").attr("value", "All");
+      
 
-    const uniqueIRBNumbers = Array.from(new Set(data.map(d => d.IRB_Number)));
-    uniqueIRBNumbers.forEach(number => {
-      selectIRBNumber.append("option").text(number).attr("value", number);
-    });
 
-    const legend = d3.select("#legend");
+      //Logic to find unique authors still needed
 
-    Object.entries(statusColors).forEach(([status, color]) => {
-      const legendItem = legend.append("div").attr("class", "legend-item");
-      legendItem.append("div")
-        .attr("class", "legend-item__color")
-        .style("background-color", color);
-      legendItem.append("span").text(status);
+
+
+
+
+      /*
+      ** Filter on the Number of papers
+      */
+      const selectMinNumberPapers = d3.select("#MinNumberSelect")
+      .on("change", function () {
+          min_value = this.value;
+          filteredData = sortedGroupedData.filter(entry => {
+            const count = entry[1].length;
+            return count >= min_value && count <= max_value;
+          });        
+          updateVisualization();
+        });
+      
+      const selectMaxNumberPapers = d3.select("#MaxNumberSelect")
+      .on("change", function () {
+          max_value = this.value;
+          filteredData = sortedGroupedData.filter(entry => {
+            const count = entry[1].length;
+            return count >= min_value && count <= max_value;
+          });        
+          updateVisualization();
+        });
+
+      //Still logic needed to add these values
+      let total_max = 150
+      for (let i = 0; i <= total_max; i++) {
+      selectMinNumberPapers.append("option")
+          .text(i.toString())
+          .attr("value", i);
+
+      selectMaxNumberPapers.append("option")
+          .text(i.toString())
+          .attr("value", i);
+      }
+
+
+      const legend = d3.select("#legend");
+
+      Object.entries(statusColors).forEach(([status, color]) => {
+        const legendItem = legend.append("div").attr("class", "legend-item");
+        legendItem.append("div")
+          .attr("class", "legend-item__color")
+          .style("background-color", color);
+        legendItem.append("span").text(status);
     });
 
     selectCitationType = d3.select("#citationType")
@@ -121,6 +173,9 @@ d3.csv(spreadsheetUrl)
         console.log("UPDATE");
         updateVisualization();
       });
+
+
+    }
 
 
 
