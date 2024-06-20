@@ -7,6 +7,10 @@ body {
   flex-direction: column;
   padding-left: 5%;
   padding-right: 5%;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
 }
 
 #general-box {
@@ -27,7 +31,7 @@ body {
 
 #info-box {
   width: 100%;
-  margin-left:1em;
+  margin-left: 1em;
 }
 
 #graph-container {
@@ -44,7 +48,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom:2em;
+  margin-bottom: 2em;
 }
 
 .legend-item {
@@ -57,14 +61,6 @@ body {
   width: 20px;
   height: 20px;
   margin-right: 0.2em;
-}
-
-/* Define the base font family and size for the body */
-body {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  color: #333;
 }
 
 /* Style for H1 */
@@ -120,11 +116,19 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 
-circle {
-  stroke: black; /* Add a stroke to make circles more visible */
-  stroke-width: 1;
+
+/* Axis text styles */
+.axis text {
+  font-family: 'Georgia', serif ;
+  font-size: 14px ;
+  font-weight: bold ;
+  color: #4f5b66 ;
+  white-space: pre-wrap ;
+  word-wrap: break-word ;
+
+  width: 200px ; /* Adjust width as needed */
 }
 
-.circle-size-legend{
-  
-}
+
+
+

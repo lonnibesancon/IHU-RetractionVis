@@ -8,9 +8,8 @@ const statusColors = {
 };
 
 let selectedCitation = "Self_Citations";
-let isGrouped = false
-let isLogged = false
-
+let isGrouped = false;
+let isLogged = false;
 
 d3.csv(spreadsheetUrl)
   .then(data => {
@@ -29,8 +28,7 @@ d3.csv(spreadsheetUrl)
     let min_value = 10;
     let max_value = 14;
 
-
-    const margin = { top: 20, right: 20, bottom: 50, left: 100 };
+    const margin = { top: 20, right: 20, bottom: 50, left: 200 };
     const width = 1200 - margin.left - margin.right;
     const height = 800 - margin.top - margin.bottom;
 
@@ -52,12 +50,12 @@ d3.csv(spreadsheetUrl)
       .padding(0.1);
 
     svg.append("g")
-      .attr("class", "x-axis")
+      .attr("class", "x-axis axis")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(xScale));
 
     svg.append("g")
-      .attr("class", "y-axis")
+      .attr("class", "y-axis axis")
       .call(d3.axisLeft(yScale).tickSize(0));
 
     let filteredData = sortedGroupedData;
@@ -66,41 +64,35 @@ d3.csv(spreadsheetUrl)
       return count >= min_value && count <= max_value;
     });
 
-    yScale.domain(sortedGroupedData.map(d => d[0]));
+    yScale.domain(filteredData.map(d => d[0]));
 
-    
+    initiateFilters();
 
-
-    initiateFilters()
-
-
-    function initiateFilters(){
+    function initiateFilters() {
       const selectIRBNumber = d3.select("#IRBNumberSelect")
-      .on("change", function () {
-        const selectedIRBNumber = this.value;
-        if (selectedIRBNumber === "All") {
-          filteredData = sortedGroupedData;
-        } else {
-          filteredData = sortedGroupedData.map(group => {
-            const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
-            return [group[0], filteredItems];
-          });
-        }
-        updateVisualization();
-      });
+        .on("change", function () {
+          const selectedIRBNumber = this.value;
+          if (selectedIRBNumber === "All") {
+            filteredData = sortedGroupedData;
+          } else {
+            filteredData = sortedGroupedData.map(group => {
+              const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
+              return [group[0], filteredItems];
+            }).filter(group => group[1].length > 0);
+          }
+          updateVisualization();
+        });
 
       const selectAuthor = d3.select("#AuthorSelect")
-      .on("change", function () {
+        .on("change", function () {
           const selectedAuthor = this.value;
           if (selectedAuthor === "All") {
             filteredData = sortedGroupedData;
           } else {
-            //Still have to implement the logic for it
-            //Logic here is based on logic from IRB
             filteredData = sortedGroupedData.map(group => {
-              const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
+              const filteredItems = group[1].filter(item => item.Author.includes(selectedAuthor));
               return [group[0], filteredItems];
-            });
+            }).filter(group => group[1].length > 0);
           }
           updateVisualization();
         });
@@ -113,50 +105,42 @@ d3.csv(spreadsheetUrl)
       });
 
       selectAuthor.append("option").text("All").attr("value", "All");
-      
 
+      const uniqueAuthors = Array.from(new Set(data.map(d => d.Author)));
+      uniqueAuthors.forEach(author => {
+        selectAuthor.append("option").text(author).attr("value", author);
+      });
 
-      //Logic to find unique authors still needed
-
-
-
-
-
-      /*
-      ** Filter on the Number of papers
-      */
       const selectMinNumberPapers = d3.select("#MinNumberSelect")
-      .on("change", function () {
-          min_value = this.value;
+        .on("change", function () {
+          min_value = +this.value;
           filteredData = sortedGroupedData.filter(entry => {
             const count = entry[1].length;
             return count >= min_value && count <= max_value;
-          });        
-          updateVisualization();
-        });
-      
-      const selectMaxNumberPapers = d3.select("#MaxNumberSelect")
-      .on("change", function () {
-          max_value = this.value;
-          filteredData = sortedGroupedData.filter(entry => {
-            const count = entry[1].length;
-            return count >= min_value && count <= max_value;
-          });        
+          });
           updateVisualization();
         });
 
-      //Still logic needed to add these values
-      let total_max = 150
+      const selectMaxNumberPapers = d3.select("#MaxNumberSelect")
+        .on("change", function () {
+          max_value = +this.value;
+          filteredData = sortedGroupedData.filter(entry => {
+            const count = entry[1].length;
+            return count >= min_value && count <= max_value;
+          });
+          updateVisualization();
+        });
+
+      let total_max = 150;
       for (let i = 0; i <= total_max; i++) {
-      selectMinNumberPapers.append("option")
+        selectMinNumberPapers.append("option")
           .text(i.toString())
           .attr("value", i);
 
-      selectMaxNumberPapers.append("option")
+        selectMaxNumberPapers.append("option")
           .text(i.toString())
           .attr("value", i);
       }
-
 
       const legend = d3.select("#legend");
 
@@ -166,215 +150,157 @@ d3.csv(spreadsheetUrl)
           .attr("class", "legend-item__color")
           .style("background-color", color);
         legendItem.append("span").text(status);
-    });
-
-    selectCitationType = d3.select("#citationType")
-      .on("change", function () {
-        console.log("UPDATE");
-        updateVisualization();
       });
 
-
+      selectCitationType = d3.select("#citationType")
+        .on("change", function () {
+          updateVisualization();
+        });
     }
 
-
-    function computeValueLogDependant(value){
-        if(isLogged)
-          return Math.log(value)
-        else
-          return value
+    function computeValueLogDependant(value) {
+      if (isLogged)
+        return Math.log(value);
+      else
+        return value;
     }
-
 
     function updateVisualization() {
-
-      //First we update all of the values needed for the visualization
       isGrouped = d3.select("#grouped-checkbox").property("checked");
       isLogged = d3.select("#log-scale-checkbox").property("checked");
       selectedCitation = d3.select("#citationType").property("value");
       yScale.domain(filteredData.map(d => d[0]));
 
-      // Redefine and recalculate the barGroups based on the filteredData
       const barGroups = svg.selectAll(".bar-group")
         .data(filteredData, d => d[0]);
 
-      // Handle the exit for all existing elements
       barGroups.exit()
         .transition()
         .duration(500)
         .attr("opacity", 0)
         .remove();
 
-      // Enter new data
       const enterBars = barGroups.enter()
         .append("g")
         .attr("class", "bar-group");
 
-      // Update the maxCount based on the new data
       maxCount = d3.max(filteredData, d => d[1].length);
       xScale.domain([0, maxCount + 1]);
 
-      // Choose whether to display bars or circles based on a condition, e.g., based on maxRadius
       const maxRadius = d3.min([yScale.bandwidth() / 2, xScale(1) - xScale(0)]);
       const pointRadiusThreshold = 0.01 * width;
 
-
-      console.log("isLogged")
-      console.log(isLogged)
-      console.log("isGrouped")
-      console.log(isGrouped)
-      console.log(d3.select("#grouped-checkbox").property("checked"))
-
-      // Clear old bars or circles
       svg.selectAll(".stacked-bar-group, .circle-point, .circle-citation").remove();
 
-      console.log("filteredData")
-      console.dir(filteredData)
-
       if (isGrouped || maxRadius < pointRadiusThreshold) {
-        // Logic for displaying bars
         displayBars(enterBars, barGroups);
       } else {
-        // Logic for displaying circles
         displayCircles(enterBars, barGroups, maxRadius);
       }
 
       updateAxes();
     }
 
-function displayBars(enterBars, barGroups) {
-  let bars = enterBars.merge(barGroups).selectAll(".stacked-bar-group")
-    .data(d => {
-        const statusData = Object.entries({ 'N/A': 0, 'EoC': 0, 'Retracted': 0 })
-          .map(([status]) => {
-            const statusCount = d[1].filter(item => item.Status === status).length;
-            return { status, count: statusCount };
-          });
+    function displayBars(enterBars, barGroups) {
+      let bars = enterBars.merge(barGroups).selectAll(".stacked-bar-group")
+        .data(d => {
+          const statusData = Object.entries({ 'N/A': 0, 'EoC': 0, 'Retracted': 0 })
+            .map(([status]) => {
+              const statusCount = d[1].filter(item => item.Status === status).length;
+              return { status, count: statusCount };
+            });
 
-        console.log("[{ Journal_Name: d[0], statusData: statusData }] = ")
-        let array = [{ Journal_Name: d[0], statusData: statusData }]
-        console.dir(array)
-        //console.log("Status Data for " + d[0] + ":", [{ Journal_Name: d[0], statusData: statusData }]);
-        return (array);
-  });
+          return [{ Journal_Name: d[0], statusData: statusData }];
+        });
 
-  console.log("Number of stacked-bar-group elements after data binding:", bars.size());
+      const barGroupsEnter = bars.enter()
+        .append("g")
+        .attr("class", "stacked-bar-group")
+        .attr("transform", d => `translate(${xScale(0)}, ${yScale(d.Journal_Name)})`);
 
-  console.log("Data")
-  console.dir(bars.data())
+      barGroupsEnter.merge(bars).selectAll(".stacked-bar")
+        .data(d => d.statusData)
+        .enter()
+        .append("rect")
+        .attr("class", "stacked-bar")
+        .attr("x", (d, i, nodes) => {
+          let prevWidth = d3.sum(d3.select(nodes[i].parentNode).datum().statusData.slice(0, i), item => item.count);
+          return xScale(prevWidth);
+        })
+        .attr("y", 0)
+        .attr("width", d => xScale(d.count))
+        .attr("height", yScale.bandwidth())
+        .attr("fill", d => statusColors[d.status]);
+    }
 
-  const barGroupsEnter = bars.enter()
-    .append("g")
-    .attr("class", "stacked-bar-group")
-    .attr("transform", d => `translate(${xScale(0)}, ${yScale(d.Journal_Name)})`);
+    function displayCircles(enterBars, barGroups, maxRadius) {
+      const citationScale = d3.scaleLinear()
+        .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
+        .range([5, Math.pow(maxRadius, 2)]);
 
-  barGroupsEnter.merge(bars).selectAll(".stacked-bar")
-    .data(d => d.statusData)
-    .enter()
-    .append("rect")
-    .attr("class", "stacked-bar")
-    .attr("x", (d, i, nodes) => {
-      let prevWidth = d3.sum(d.statusData.slice(0, i), item => item.count);
-      return xScale(prevWidth);
-      })
-    .attr("y", 0)
-    .attr("width", d => xScale(d.count))
-    .attr("height", yScale.bandwidth())
-    .attr("fill", d => statusColors[d.status]);
-}
+      let circles = enterBars.merge(barGroups).selectAll(".circle-citation")
+        .data(d => d[1])
+        .enter()
+        .append("circle")
+        .attr("class", "circle-citation")
+        .attr("cx", (d, i) => xScale(i + 1))
+        .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2)
+        .attr("r", d => {
+          let value = computeValueLogDependant(parseFloat(d[selectedCitation]));
+          return (parseFloat(d[selectedCitation]) === 0 ? 5 : Math.sqrt(citationScale(value)));
+        })
+        .attr("fill", d => statusColors[d.Status])
+        .attr("fill-opacity", 0.3)
+        .attr("original-fill", d => statusColors[d.Status])
+        .attr("id", d => "point_" + d.Line_ID)
+        .on("mouseover", function (event, d) {
+          d3.select(this).attr("fill", "yellow");
+          d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
+          updateInfo(d);
+        })
+        .on("mouseout", function (event, d) {
+          let tmp = d3.select(this);
+          tmp.attr("fill", tmp.attr("original-fill"));
+          tmp = d3.select("#point_" + d.Line_ID);
+          tmp.attr("fill", tmp.attr("original-fill"));
+        })
+        .transition()
+        .duration(500);
 
-function displayCircles(enterBars, barGroups, maxRadius) {
-  const citationScale = d3.scaleLinear()
-      .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
-      .range([5, Math.pow(maxRadius, 2)]);
+      const legend = d3.select("#legend");
+      const legendValues = [0, 0.25, 0.5, 0.75, 1].map(d => d * d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation])));
+      const legendRadius = legendValues.map(d => Math.sqrt(citationScale(d)));
 
-  let circles = enterBars.merge(barGroups).selectAll(".circle-citation")
-    .data(d => d[1])
-    .enter()
-    .append("circle")
-    .attr("class", "circle-citation")
-    .attr("cx", (d, i) => xScale(i + 1))
-    .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2)
-    .attr("r", d => {
-      let value = computeValueLogDependant(parseFloat(d[selectedCitation]))
-      return(parseFloat(d[selectedCitation]) === 0 ? 5 : Math.sqrt(citationScale(value)))
-    })
-    .attr("fill", d => statusColors[d.Status])
-    .attr("fill-opacity", 0.3)
-    .attr("original-fill", d => statusColors[d.Status])
-    .attr("id", d => "point_" + d.Line_ID)
-    .on("mouseover", function(event, d) {
-      d3.select(this).attr("fill", "yellow");
-      d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
-      updateInfo(d);
-    })
-    .on("mouseout", function(event, d) {
-      let tmp = d3.select(this);
-      tmp.attr("fill", tmp.attr("original-fill"));
-      tmp = d3.select("#point_" + d.Line_ID);
-      tmp.attr("fill", tmp.attr("original-fill"));
-    })
-    .transition()
-    .duration(500);
+      legend.selectAll(".circle-size-legend").remove();
 
+      const sizeLegend = legend.append("g")
+        .attr("class", "circle-size-legend")
+        .attr("transform", `translate(100, 100)`);
 
-    const legend = d3.select("#legend")
-     // Create legend for circle sizes
-    const legendValues = [0, 0.25, 0.5, 0.75, 1].map(d => d * d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation])));
-    const legendRadius = legendValues.map(d => Math.sqrt(citationScale(d)));
+      sizeLegend.selectAll("circle")
+        .data(legendRadius)
+        .enter()
+        .append("circle")
+        .attr("cx", (d, i) => i * 50 + 10)
+        .attr("cy", 10)
+        .attr("r", d => d)
+        .attr("fill", "gray")
+        .attr("fill-opacity", 0.3);
 
-    console.log("legend")
-    console.dir(legend)
+      sizeLegend.selectAll("text")
+        .data(legendValues)
+        .enter()
+        .append("text")
+        .attr("x", (d, i) => i * 50 + 10)
+        .attr("y", 30)
+        .attr("text-anchor", "middle")
+        .text(d => Math.round(d));
+    }
 
-    legend.selectAll(".circle-size-legend").remove();
-
-    // Create a group for the circle size legend
-    const sizeLegend = legend.append("g")
-      .attr("class", "circle-size-legend")
-      .attr("transform", `translate(100, 100)`); // Adjust position as necessary
-
-    sizeLegend.selectAll("circle")
-      .data(legendRadius)
-      .enter()
-      .append("circle")
-      .attr("cx", (d, i) => {
-        let cx = i * 50 + 10;
-        console.log(`Legend circle cx: ${cx}`);  // Debugging line to check legend circle cx
-        return cx;
-      })
-      .attr("cy", (d, i) => {
-        let cy = 10;
-        console.log(`Legend circle cy: ${cy}`);  // Debugging line to check legend circle cy
-        return cy;
-      })
-      .attr("r", d => {
-        console.log(`Legend circle radius: ${d}`);  // Debugging line to check legend circle radius
-        return d;
-      })
-      .attr("fill", "gray")
-      .attr("fill-opacity", 0.3);
-
-    sizeLegend.selectAll("text")
-      .data(legendValues)
-      .enter()
-      .append("text")
-      .attr("x", (d, i) => i * 50 + 10)
-      .attr("y", 10)
-      .attr("text-anchor", "middle")
-      .text(d => Math.round(d));
-
-
-  }
-
-
-
-
-    updateVisualization("Citations");
+    updateVisualization();
     updateAxes();
 
     function updateAxes() {
-      console.log("xScale.domain()")
-      console.dir(xScale.domain())
       svg.select(".x-axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xScale));
@@ -400,22 +326,22 @@ function updateInfo(d) {
   if (d.DOI_Status) {
     d3.select("#DOI_Status").html(`<a href="${d.DOI_Status}" target="_blank">${d.DOI_Status}</a>`);
   } else {
-    d3.select("#DOI_Status").text('N/A'); // Or any other placeholder text
+    d3.select("#DOI_Status").text('N/A');
   }
 }
 
-
+// Wrapping function
 function wrap(text, width) {
   text.each(function () {
-    var text = d3.select(this),
-      words = text.text().split(/\s+/).reverse(),
-      word,
-      line = [],
-      lineNumber = 0,
-      lineHeight = 1.1,
-      y = text.attr("y"),
-      dy = parseFloat(text.attr("dy") || 0),
-      tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+    const text = d3.select(this);
+    const words = text.text().split(/\s+/).reverse();
+    let word;
+    let line = [];
+    let lineNumber = 0;
+    const lineHeight = 1.1;
+    const y = text.attr("y");
+    const dy = parseFloat(text.attr("dy"));
+    let tspan = text.text(null).append("tspan").attr("x", -10).attr("y", y).attr("dy", `${dy}em`);
     while (word = words.pop()) {
       line.push(word);
       tspan.text(line.join(" "));
@@ -423,7 +349,7 @@ function wrap(text, width) {
         line.pop();
         tspan.text(line.join(" "));
         line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        tspan = text.append("tspan").attr("x", -10).attr("y", y).attr("dy", `${++lineNumber * lineHeight + dy}em`).text(word);
       }
     }
   });
