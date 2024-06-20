@@ -82,6 +82,23 @@ d3.csv(spreadsheetUrl)
         updateVisualization();
       });
 
+    const selectAuthor = d3.select("#AuthorSelect")
+    .on("change", function () {
+        const selectedAuthor = this.value;
+        if (selectedAuthor === "All") {
+          filteredData = sortedGroupedData;
+        } else {
+          //Still have to implement the logic for it
+          //Logic here is based on logic from IRB
+          filteredData = sortedGroupedData.map(group => {
+            const filteredItems = group[1].filter(item => String(item.IRB_Number) === String(selectedIRBNumber));
+            return [group[0], filteredItems];
+          });
+        }
+        updateVisualization();
+      });
+
+    selectAuthor.append("option").text("All").attr("value", "All");
     selectIRBNumber.append("option").text("All").attr("value", "All");
 
     const uniqueIRBNumbers = Array.from(new Set(data.map(d => d.IRB_Number)));
