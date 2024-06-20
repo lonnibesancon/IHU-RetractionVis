@@ -7,7 +7,7 @@ const statusColors = {
   'Retracted': '#e02d19',
 };
 
-let selectedCitation = "Citations";
+let selectedCitation = "Self_Citations";
 let isGrouped = false
 let isLogged = false
 
@@ -178,7 +178,12 @@ d3.csv(spreadsheetUrl)
     }
 
 
-
+    function computeValueLogDependant(value){
+        if(isLogged)
+          return Math.log(value)
+        else
+          return value
+    }
 
 
     function updateVisualization() {
@@ -290,7 +295,10 @@ function displayCircles(enterBars, barGroups, maxRadius) {
     .attr("class", "circle-citation")
     .attr("cx", (d, i) => xScale(i + 1))
     .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2)
-    .attr("r", d => parseFloat(d[selectedCitation]) === 0 ? 5 : Math.sqrt(citationScale(parseFloat(d[selectedCitation]))))
+    .attr("r", d => {
+      let value = computeValueLogDependant(parseFloat(d[selectedCitation]))
+      return(parseFloat(d[selectedCitation]) === 0 ? 5 : Math.sqrt(citationScale(value)))
+    })
     .attr("fill", d => statusColors[d.Status])
     .attr("fill-opacity", 0.3)
     .attr("original-fill", d => statusColors[d.Status])
@@ -308,7 +316,56 @@ function displayCircles(enterBars, barGroups, maxRadius) {
     })
     .transition()
     .duration(500);
+
+
+    const legend = d3.select("#legend")
+     // Create legend for circle sizes
+    const legendValues = [0, 0.25, 0.5, 0.75, 1].map(d => d * d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation])));
+    const legendRadius = legendValues.map(d => Math.sqrt(citationScale(d)));
+
+    console.log("legend")
+    console.dir(legend)
+
+    legend.selectAll(".circle-size-legend").remove();
+
+    // Create a group for the circle size legend
+    const sizeLegend = legend.append("g")
+      .attr("class", "circle-size-legend")
+      .attr("transform", `translate(100, 100)`); // Adjust position as necessary
+
+    sizeLegend.selectAll("circle")
+      .data(legendRadius)
+      .enter()
+      .append("circle")
+      .attr("cx", (d, i) => {
+        let cx = i * 50 + 10;
+        console.log(`Legend circle cx: ${cx}`);  // Debugging line to check legend circle cx
+        return cx;
+      })
+      .attr("cy", (d, i) => {
+        let cy = 10;
+        console.log(`Legend circle cy: ${cy}`);  // Debugging line to check legend circle cy
+        return cy;
+      })
+      .attr("r", d => {
+        console.log(`Legend circle radius: ${d}`);  // Debugging line to check legend circle radius
+        return d;
+      })
+      .attr("fill", "gray")
+      .attr("fill-opacity", 0.3);
+
+    sizeLegend.selectAll("text")
+      .data(legendValues)
+      .enter()
+      .append("text")
+      .attr("x", (d, i) => i * 50 + 10)
+      .attr("y", 10)
+      .attr("text-anchor", "middle")
+      .text(d => Math.round(d));
+
+
   }
+
 
 
 

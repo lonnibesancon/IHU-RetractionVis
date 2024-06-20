@@ -31,7 +31,7 @@ body {
 }
 
 #graph-container {
-  margin-top: 20px;
+  margin-top: 2em;
 }
 
 #chart {
@@ -43,19 +43,20 @@ body {
 .legend {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5em;
+  width: 100%;
+  margin-bottom:2em;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  margin-right: 20px;
+  margin-right: 1.5em;
 }
 
 .legend-item__color {
   width: 20px;
   height: 20px;
-  margin-right: 5px;
+  margin-right: 0.2em;
 }
 
 /* Define the base font family and size for the body */
@@ -117,4 +118,13 @@ a {
 a:hover, a:focus {
   color: #2980b9;
   text-decoration: underline;
+}
+
+circle {
+  stroke: black; /* Add a stroke to make circles more visible */
+  stroke-width: 1;
+}
+
+.circle-size-legend{
+  
 }
