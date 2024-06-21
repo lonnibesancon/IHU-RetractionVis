@@ -10,7 +10,7 @@ const statusColors = {
 let selectedCitation = "Self_Citations";
 let isGrouped = false;
 let isLogged = false;
-let height_per_journal = 40
+let height_per_journal = 50
 
 d3.csv(spreadsheetUrl)
   .then(data => {
@@ -26,8 +26,8 @@ d3.csv(spreadsheetUrl)
 
     let maxCount = d3.max(sortedGroupedData, d => d[1].length);
 
-    let min_value = 10;
-    let max_value = 14;
+    let min_value = 13;
+    let max_value = 30;
 
     const margin = { top: 20, right: 20, bottom: 50, left: 200 };
     const width = 1200 - margin.left - margin.right;
@@ -264,15 +264,17 @@ d3.csv(spreadsheetUrl)
         .attr("original-fill", d => statusColors[d.Status])
         .attr("id", d => "point_" + d.Line_ID)
         .on("mouseover", function (event, d) {
-          d3.select(this).attr("fill", "yellow");
-          d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
+          //d3.select(this).attr("fill", "yellow");
+          //d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
+          d3.select(this).attr("class","circle-citation selected")
           updateInfo(d);
         })
         .on("mouseout", function (event, d) {
           let tmp = d3.select(this);
-          tmp.attr("fill", tmp.attr("original-fill"));
-          tmp = d3.select("#point_" + d.Line_ID);
-          tmp.attr("fill", tmp.attr("original-fill"));
+          d3.select(this).attr("class","circle-citation")
+          //tmp.attr("fill", tmp.attr("original-fill"));
+          //tmp = d3.select("#point_" + d.Line_ID);
+          //tmp.attr("fill", tmp.attr("original-fill"));
         })
         .transition()
         .duration(500);

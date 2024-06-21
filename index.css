@@ -116,6 +116,10 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 
+.selected {
+  stroke: black;
+  stroke-width: 3;
+}
 
 /* Axis text styles */
 .axis text {
