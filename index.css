@@ -1,18 +1,17 @@
-body {
+body {  
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
   height: 100vh;
-  margin: 1em;
+  margin: 0em;
   flex-direction: column;
-  padding-left: 5%;
-  padding-right: 5%;
+  padding-left: 1%;
+  padding-right: 1%;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.3;
   color: #333;
 }
-
 #general-box {
   width: 100%;
   display: flex;
@@ -35,7 +34,7 @@ body {
 }
 
 #graph-container {
-  margin-top: 2em;
+  /*margin-top: 2em;*/
 }
 
 #chart {
@@ -69,9 +68,11 @@ h1 {
   font-size: 2.5em;
   font-weight: bold;
   color: #2c3e50;
-  margin-top: 1em;
+  margin-top: 0;
+  padding-top: 0;
   text-align: center;
   width: 100%;
+  line-height: 0.5em;
 }
 
 /* Style for H2 */
@@ -89,19 +90,23 @@ h3 {
   font-size: 1.75em;
   font-weight: bold;
   color: #4f5b66;
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
+  margin-top: 0;
 }
 
 /* General paragraph style */
 p {
-  margin-bottom: 1.05em;
+  margin-bottom: 0.5em;
+  margin-top: 0;
+  line-height: 20px;
 }
 
 td.title_td {
   font-family: 'Georgia', serif;
   font-weight: bold;
   color: #4f5b66;
-  padding: 0.2em;
+  /*padding: 0.2em;*/
+  line-height: 18px;
 }
 
 /* Style for a */
@@ -124,7 +129,7 @@ a:hover, a:focus {
 /* Axis text styles */
 .axis text {
   font-family: 'Georgia', serif ;
-  font-size: 14px ;
+  font-size: 10px ;
   font-weight: bold ;
   color: #4f5b66 ;
   white-space: pre-wrap ;
