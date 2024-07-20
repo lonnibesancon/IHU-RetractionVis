@@ -157,6 +157,7 @@ d3.csv(spreadsheetUrl)
           updateVisualization();
         });
 
+
       computeAuthorList(200,data,"number_of_papers")
 
     }
@@ -209,7 +210,31 @@ d3.csv(spreadsheetUrl)
         console.dir(author)
         authorSelect.append('option').attr('value', author).text(author);
       });
+
+      updateMinNumberOfPapersPerAuthor(authorPaperCount)
     }
+
+
+    function updateMinNumberOfPapersPerAuthor(authorPaperCount){
+      let maxPapers = 0;
+      authorPaperCount.forEach(count => {
+        if (count > maxPapers) {
+          maxPapers = count;
+        }
+      });
+
+      let paperCountArray = Array.from({ length: maxPapers + 1 }, (_, i) => i);
+
+      let minNumberPerAuthorSelect = d3.select('#MinNumberPerAuthor');
+      minNumberPerAuthorSelect.selectAll('option')
+        .data(paperCountArray)
+        .enter()
+        .append('option')
+        .attr('value', d => d)
+        .text(d => d);
+      }
+
+
 
 
     function computeValueLogDependant(value) {
