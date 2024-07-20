@@ -26,11 +26,11 @@ d3.csv(spreadsheetUrl)
 
     let maxCount = d3.max(sortedGroupedData, d => d[1].length);
 
-    let min_value = 13;
-    let max_value = 30;
+    let min_value = 0;
+    let max_value = 200;
 
     const margin = { top: 20, right: 20, bottom: 50, left: 200 };
-    const width = 1200 - margin.left - margin.right;
+    const width = 1800 - margin.left - margin.right;
     const height = 800 - margin.top - margin.bottom;
 
     d3.select("#log-scale-checkbox").on("change", updateVisualization);
