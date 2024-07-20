@@ -27,7 +27,12 @@ d3.csv(spreadsheetUrl)
     let maxCount = d3.max(sortedGroupedData, d => d[1].length);
 
     let min_value = 0;
-    let max_value = 200;
+    let max_value = maxCount;
+
+    console.log("groupedData")
+    console.dir(groupedData)
+    console.log("Data")
+    console.dir(data)
 
     const margin = { top: 20, right: 20, bottom: 50, left: 200 };
     const width = 1800 - margin.left - margin.right;
@@ -91,7 +96,7 @@ d3.csv(spreadsheetUrl)
             filteredData = sortedGroupedData;
           } else {
             filteredData = sortedGroupedData.map(group => {
-              const filteredItems = group[1].filter(item => item.Author.includes(selectedAuthor));
+              const filteredItems = group[1].filter(item => item.Authors.includes(selectedAuthor));
               return [group[0], filteredItems];
             }).filter(group => group[1].length > 0);
           }
@@ -105,12 +110,6 @@ d3.csv(spreadsheetUrl)
         selectIRBNumber.append("option").text(number).attr("value", number);
       });
 
-      selectAuthor.append("option").text("All").attr("value", "All");
-
-      const uniqueAuthors = Array.from(new Set(data.map(d => d.Author)));
-      uniqueAuthors.forEach(author => {
-        selectAuthor.append("option").text(author).attr("value", author);
-      });
 
       const selectMinNumberPapers = d3.select("#MinNumberSelect")
         .on("change", function () {
@@ -132,8 +131,8 @@ d3.csv(spreadsheetUrl)
           updateVisualization();
         });
 
-      let total_max = 150;
-      for (let i = 0; i <= total_max; i++) {
+      
+      for (let i = 0; i <= max_value; i++) {
         selectMinNumberPapers.append("option")
           .text(i.toString())
           .attr("value", i);
@@ -157,7 +156,61 @@ d3.csv(spreadsheetUrl)
         .on("change", function () {
           updateVisualization();
         });
+
+      computeAuthorList(200,data,"number_of_papers")
+
     }
+
+    function computeAuthorList(min_number_of_Papers, data, orderType = 'alphabetical') {
+      // Create a map to count the number of papers for each author
+      let authorPaperCount = new Map();
+
+      // Count the number of papers for each author
+      data.forEach(d => {
+        if (d.Authors) {
+          d.Authors.split(' - ').forEach(author => {
+            author = author.trim();
+            if (authorPaperCount.has(author)) {
+              authorPaperCount.set(author, authorPaperCount.get(author) + 1);
+            } else {
+              authorPaperCount.set(author, 1);
+            }
+          });
+        }
+      });
+
+      // Filter authors who have at least min_number_of_Papers
+      let filteredAuthors = Array.from(authorPaperCount.entries())
+        .filter(([author, count]) => count >= min_number_of_Papers);
+
+      // Sort authors based on the specified order type
+      if (orderType === 'alphabetical') {
+        filteredAuthors.sort(([authorA], [authorB]) => authorA.localeCompare(authorB));
+      } else if (orderType === 'number_of_papers') {
+        filteredAuthors.sort(([, countA], [, countB]) => countB - countA);
+      }
+
+      // Extract just the author names after sorting
+      let uniqueAuthors = filteredAuthors.map(([author, count]) => author);
+
+      console.log("uniqueAuthors")
+      console.dir(uniqueAuthors)
+
+      // Populate AuthorSelect dropdown with "All" as the first option and unique authors
+      const authorSelect = d3.select('#AuthorSelect');
+      authorSelect.html(''); // Clear existing options
+      authorSelect.append('option').attr('value', 'All').text('All'); // Add "All" option first
+
+      console.log("uniqueAuthors2")
+      console.dir(uniqueAuthors)
+
+      uniqueAuthors.forEach(author => {
+        console.log("author")
+        console.dir(author)
+        authorSelect.append('option').attr('value', author).text(author);
+      });
+    }
+
 
     function computeValueLogDependant(value) {
       if (isLogged)
