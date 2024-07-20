@@ -44,7 +44,31 @@
             <option value="Self_Citations">Self Citations</option>
             <option value="Altmetrics">Altmetrics</option>
           </select>
-        </p>
+        </p> 
+          <table id="slider-table">
+            <tr>
+              <td>Minimum Citation:</td>
+              <td>
+                <input type="range" min="0" max="100" value="0" class="slider" id="min_citation_slider">
+              </td>
+              <td><span id="min_citation_value">0</span></td>
+            </tr>
+            <tr>
+              <td>Minimum Altmetric:</td>
+              <td>
+                <input type="range" min="0" max="100" value="0" class="slider" id="min_altmetric_slider">
+              </td>
+              <td><span id="min_altmetric_value">0</span></td>
+            </tr>
+            <tr>
+              <td>Minimum Self-citation:</td>
+              <td>
+                <input type="range" min="0" max="100" value="0" class="slider" id="min_self_slider">
+              </td>
+              <td><span id="min_self_value">0</span></td>
+            </tr>
+          </table>
+        </div>
       </div>
       <div id="info-box">
         <h3> Paper information</h3>
@@ -91,7 +115,7 @@
       </div>
       <div id="altmetric-container">
         <!-- Altmetric donut will be embedded here -->
-        <div data-badge-type='medium-donut' class='altmetric-embed' data-badge-details='right' data-doi='10.1038/nature12373'></div>
+        <div data-badge-type='medium-donut' class='altmetric-embed' data-badge-details='right' data-doi=''></div>
       </div>
     </div>
   </div>

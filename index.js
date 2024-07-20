@@ -12,6 +12,8 @@ let isGrouped = false;
 let isLogged = false;
 let height_per_journal = 50
 
+let authorPaperCount = new Map();
+
 d3.csv(spreadsheetUrl)
   .then(data => {
     data.sort((a, b) => {
@@ -131,6 +133,12 @@ d3.csv(spreadsheetUrl)
           updateVisualization();
         });
 
+      const minNumberPerAuthorSelect = d3.select('#MinNumberPerAuthor')
+       .on("change", function () {
+          min_value = +this.value;
+          computeAuthorList(min_value,data, "number_of_papers")
+        });
+
       
       for (let i = 0; i <= max_value; i++) {
         selectMinNumberPapers.append("option")
@@ -158,14 +166,14 @@ d3.csv(spreadsheetUrl)
         });
 
 
-      computeAuthorList(200,data,"number_of_papers")
+      computeAuthorList(0,data,"number_of_papers")
+      initiateSliders();
 
     }
 
     function computeAuthorList(min_number_of_Papers, data, orderType = 'alphabetical') {
       // Create a map to count the number of papers for each author
-      let authorPaperCount = new Map();
-
+      authorPaperCount = new Map();
       // Count the number of papers for each author
       data.forEach(d => {
         if (d.Authors) {
@@ -225,7 +233,7 @@ d3.csv(spreadsheetUrl)
 
       let paperCountArray = Array.from({ length: maxPapers + 1 }, (_, i) => i);
 
-      let minNumberPerAuthorSelect = d3.select('#MinNumberPerAuthor');
+      const minNumberPerAuthorSelect = d3.select('#MinNumberPerAuthor');
       minNumberPerAuthorSelect.selectAll('option')
         .data(paperCountArray)
         .enter()
@@ -234,6 +242,31 @@ d3.csv(spreadsheetUrl)
         .text(d => d);
       }
 
+
+    function initiateSliders(){
+      const minCitationSlider = document.getElementById('min_citation_slider');
+      const minCitationValue = document.getElementById('min_citation_value');
+      
+      const minAltmetricSlider = document.getElementById('min_altmetric_slider');
+      const minAltmetricValue = document.getElementById('min_altmetric_value');
+      
+      const minSelfSlider = document.getElementById('min_self_slider');
+      const minSelfValue = document.getElementById('min_self_value');
+      
+      minCitationSlider.oninput = function() {
+        console.log("Change")
+        minCitationValue.textContent = this.value;
+      };
+      
+      minAltmetricSlider.oninput = function() {
+        minAltmetricValue.textContent = this.value;
+      };
+      
+      minSelfSlider.oninput = function() {
+        minSelfValue.textContent = this.value;
+      };
+     
+    }
 
 
 
