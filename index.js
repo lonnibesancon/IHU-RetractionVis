@@ -411,11 +411,13 @@ d3.csv(spreadsheetUrl)
         .data(legendRadius)
         .enter()
         .append("circle")
+        .attr("class", (d, i) => {
+          const status = ["NA", "EoC", "Retracted"][i % 3]; // Example to cycle through statuses
+          return `legend-circle ${status.replace(/\s+/g, '').replace(/\//g, '')}`;
+        })
         .attr("cx", (d, i) => i * 50 + 10)
         .attr("cy", 10)
-        .attr("r", d => d)
-        .attr("fill", "gray")
-        .attr("fill-opacity", 0.3);
+        .attr("r", d => d);
 
       sizeLegend.selectAll("text")
         .data(legendValues)
