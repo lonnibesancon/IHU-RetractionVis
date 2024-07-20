@@ -1,5 +1,4 @@
 /* General Styles */
-
 body {  
   display: flex;
   justify-content: flex-start;
@@ -385,8 +384,8 @@ body.dark-mode .stacked-bar.Retracted {
   fill: #ff4c4c;
 }
 
-
 /* Legend Circle Styles Light Mode */
+
 .legend-circle.NA {
   fill: #303bc9;
   fill-opacity: 0.3;
@@ -403,6 +402,7 @@ body.dark-mode .stacked-bar.Retracted {
 }
 
 /* Legend Circle Styles Dark Mode */
+
 body.dark-mode .legend-circle.NA {
   fill: #4a6cf7;
   fill-opacity: 0.3;
@@ -415,5 +415,17 @@ body.dark-mode .legend-circle.EoC {
 
 body.dark-mode .legend-circle.Retracted {
   fill: #ff4c4c;
+  fill-opacity: 0.3;
+}
+
+/* Size Legend Styles */
+
+.legend-circle-size {
+  fill: gray;
+  fill-opacity: 0.3;
+}
+
+body.dark-mode .legend-circle-size {
+  fill: lightgray;
   fill-opacity: 0.3;
 }

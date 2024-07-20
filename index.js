@@ -10,13 +10,13 @@ const statusColors = {
 let selectedCitation = "Self_Citations";
 let isGrouped = false;
 let isLogged = false;
-let height_per_journal = 50
+let height_per_journal = 50;
 
 let authorPaperCount = new Map();
 
-let min_citation_value
-let min_altmetric_value
-let min_self_value
+let min_citation_value;
+let min_altmetric_value;
+let min_self_value;
 
 d3.csv(spreadsheetUrl)
   .then(data => {
@@ -35,10 +35,10 @@ d3.csv(spreadsheetUrl)
     let min_value = 0;
     let max_value = maxCount;
 
-    console.log("groupedData")
-    console.dir(groupedData)
-    console.log("Data")
-    console.dir(data)
+    console.log("groupedData");
+    console.dir(groupedData);
+    console.log("Data");
+    console.dir(data);
 
     const margin = { top: 20, right: 20, bottom: 50, left: 200 };
     const width = 1800 - margin.left - margin.right;
@@ -117,7 +117,6 @@ d3.csv(spreadsheetUrl)
         selectIRBNumber.append("option").text(number).attr("value", number);
       });
 
-
       const selectMinNumberPapers = d3.select("#MinNumberSelect")
         .on("change", function () {
           min_value = +this.value;
@@ -139,12 +138,11 @@ d3.csv(spreadsheetUrl)
         });
 
       const minNumberPerAuthorSelect = d3.select('#MinNumberPerAuthor')
-       .on("change", function () {
+        .on("change", function () {
           min_value = +this.value;
-          computeAuthorList(min_value,data, "number_of_papers")
+          computeAuthorList(min_value, data, "number_of_papers");
         });
 
-      
       for (let i = 0; i <= max_value; i++) {
         selectMinNumberPapers.append("option")
           .text(i.toString())
@@ -170,10 +168,8 @@ d3.csv(spreadsheetUrl)
           updateVisualization();
         });
 
-
-      computeAuthorList(0,data,"number_of_papers")
+      computeAuthorList(0, data, "number_of_papers");
       initiateSliders();
-
     }
 
     function computeAuthorList(min_number_of_Papers, data, orderType = 'alphabetical') {
@@ -207,28 +203,27 @@ d3.csv(spreadsheetUrl)
       // Extract just the author names after sorting
       let uniqueAuthors = filteredAuthors.map(([author, count]) => author);
 
-      console.log("uniqueAuthors")
-      console.dir(uniqueAuthors)
+      console.log("uniqueAuthors");
+      console.dir(uniqueAuthors);
 
       // Populate AuthorSelect dropdown with "All" as the first option and unique authors
       const authorSelect = d3.select('#AuthorSelect');
       authorSelect.html(''); // Clear existing options
       authorSelect.append('option').attr('value', 'All').text('All'); // Add "All" option first
 
-      console.log("uniqueAuthors2")
-      console.dir(uniqueAuthors)
+      console.log("uniqueAuthors2");
+      console.dir(uniqueAuthors);
 
       uniqueAuthors.forEach(author => {
-        console.log("author")
-        console.dir(author)
+        console.log("author");
+        console.dir(author);
         authorSelect.append('option').attr('value', author).text(author);
       });
 
-      updateMinNumberOfPapersPerAuthor(authorPaperCount)
+      updateMinNumberOfPapersPerAuthor(authorPaperCount);
     }
 
-
-    function updateMinNumberOfPapersPerAuthor(authorPaperCount){
+    function updateMinNumberOfPapersPerAuthor(authorPaperCount) {
       let maxPapers = 0;
       authorPaperCount.forEach(count => {
         if (count > maxPapers) {
@@ -245,36 +240,32 @@ d3.csv(spreadsheetUrl)
         .append('option')
         .attr('value', d => d)
         .text(d => d);
-      }
-
-
-    function initiateSliders(){
-      const minCitationSlider = document.getElementById('min_citation_slider');
-      const minCitationValue = document.getElementById('min_citation_value');
-      
-      const minAltmetricSlider = document.getElementById('min_altmetric_slider');
-      const minAltmetricValue = document.getElementById('min_altmetric_value');
-      
-      const minSelfSlider = document.getElementById('min_self_slider');
-      const minSelfValue = document.getElementById('min_self_value');
-      
-      minCitationSlider.oninput = function() {
-        minCitationValue.textContent = this.value;
-        min_citation_value = this.value
-      };
-      
-      minAltmetricSlider.oninput = function() {
-        minAltmetricValue.textContent = this.value;
-        min_altmetric_value = this.value
-      };
-      
-      minSelfSlider.oninput = function() {
-        minSelfValue.textContent = this.value;
-      };
-     
     }
 
+    function initiateSliders() {
+      const minCitationSlider = document.getElementById('min_citation_slider');
+      const minCitationValue = document.getElementById('min_citation_value');
 
+      const minAltmetricSlider = document.getElementById('min_altmetric_slider');
+      const minAltmetricValue = document.getElementById('min_altmetric_value');
+
+      const minSelfSlider = document.getElementById('min_self_slider');
+      const minSelfValue = document.getElementById('min_self_value');
+
+      minCitationSlider.oninput = function () {
+        minCitationValue.textContent = this.value;
+        min_citation_value = this.value;
+      };
+
+      minAltmetricSlider.oninput = function () {
+        minAltmetricValue.textContent = this.value;
+        min_altmetric_value = this.value;
+      };
+
+      minSelfSlider.oninput = function () {
+        minSelfValue.textContent = this.value;
+      };
+    }
 
     function computeValueLogDependant(value) {
       if (isLogged)
@@ -290,8 +281,8 @@ d3.csv(spreadsheetUrl)
       yScale.domain(filteredData.map(d => d[0]));
 
       const numberOfJournals = yScale.domain().length;
-      const padding = 3
-      const newHeight = numberOfJournals * height_per_journal + padding * numberOfJournals; 
+      const padding = 3;
+      const newHeight = numberOfJournals * height_per_journal + padding * numberOfJournals;
       d3.select("#chart")
         .attr("height", newHeight + margin.top + margin.bottom);
       svg.attr("height", newHeight + margin.top + margin.bottom);
@@ -357,10 +348,10 @@ d3.csv(spreadsheetUrl)
         .attr("y", 0)
         .attr("width", d => xScale(d.count))
         .attr("height", yScale.bandwidth())
-        .on("mouseover", function(event, d) {
+        .on("mouseover", function (event, d) {
           d3.select(this).attr("class", `stacked-bar ${d.status.replace(/\s+/g, '').replace(/\//g, '')} selected`);
         })
-        .on("mouseout", function(event, d) {
+        .on("mouseout", function (event, d) {
           d3.select(this).attr("class", `stacked-bar ${d.status.replace(/\s+/g, '').replace(/\//g, '')}`);
         });
     }
@@ -369,8 +360,6 @@ d3.csv(spreadsheetUrl)
       const citationScale = d3.scaleLinear()
         .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
         .range([5, Math.pow(maxRadius, 2)]);
-
-      
 
       let circles = enterBars.merge(barGroups).selectAll(".circle-citation")
         .data(d => d[1])
@@ -385,17 +374,15 @@ d3.csv(spreadsheetUrl)
         })
         .attr("id", d => "point_" + d.Line_ID)
         .on("mouseover", function (event, d) {
-          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '')} selected`);
+          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '').replace(/\//g, '')} selected`);
           updateAltmetricDonut(d.DOI);
           updateInfo(d);
         })
         .on("mouseout", function (event, d) {
-          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '')}`);
+          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '').replace(/\//g, '')}`);
         })
         .transition()
         .duration(500);
-
-
 
       const legend = d3.select("#legend");
       const legendValues = [0, 0.25, 0.5, 0.75, 1].map(d => d * d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation])));
@@ -405,16 +392,13 @@ d3.csv(spreadsheetUrl)
 
       const sizeLegend = legend.append("g")
         .attr("class", "circle-size-legend")
-        .attr("transform", `translate(100, 100)`);
+        .attr("transform", `translate(300, 30)`);
 
       sizeLegend.selectAll("circle")
         .data(legendRadius)
         .enter()
         .append("circle")
-        .attr("class", (d, i) => {
-          const status = ["NA", "EoC", "Retracted"][i % 3]; // Example to cycle through statuses
-          return `legend-circle ${status.replace(/\s+/g, '').replace(/\//g, '')}`;
-        })
+        .attr("class", "legend-circle-size")
         .attr("cx", (d, i) => i * 50 + 10)
         .attr("cy", 10)
         .attr("r", d => d);
@@ -426,7 +410,7 @@ d3.csv(spreadsheetUrl)
         .attr("x", (d, i) => i * 50 + 10)
         .attr("y", 30)
         .attr("text-anchor", "middle")
-        .text(d => Math.round(d));
+        .text(d => d3.format(".1f")(d));
     }
 
     updateVisualization();
@@ -462,8 +446,6 @@ function updateInfo(d) {
   }
 }
 
-
-
 function toggleAltmetricDarkMode() {
   const embeds = document.querySelectorAll('.altmetric-embed');
   embeds.forEach(embed => {
@@ -491,20 +473,17 @@ function toggleAltmetricDarkMode() {
   });
 }
 
-
-
-function initiateDarkMode(){
+function initiateDarkMode() {
   const darkModeToggle = document.getElementById('dark-mode-toggle');
-  darkModeToggle.addEventListener('click', function() {
+  darkModeToggle.addEventListener('click', function () {
     document.body.classList.toggle('dark-mode');
-    console.log("Clicked")
+    console.log("Clicked");
     toggleAltmetricDarkMode();
-
   });
 
   function toggleAltmetricDarkMode() {
     const altmetricBadges = document.querySelectorAll('.altmetric-embed img');
-    console.log('toggleAltmetricDarkMode')
+    console.log('toggleAltmetricDarkMode');
     altmetricBadges.forEach(img => {
       applyOverlay(img);
     });
@@ -543,20 +522,18 @@ function initiateDarkMode(){
   }
 
   // Function to update the Altmetric donut
-  window.updateAltmetricDonut = function(doi) {
+  window.updateAltmetricDonut = function (doi) {
     var altmetricContainer = document.querySelector('#altmetric-container .altmetric-embed');
     altmetricContainer.setAttribute('data-doi', doi);
     _altmetric_embed_init(); // Reinitialize the Altmetric embed script
 
     // Apply overlay after the new badge is loaded
-    setTimeout(function() {
+    setTimeout(function () {
       const newBadge = altmetricContainer.querySelector('img');
       applyOverlay(newBadge);
     }, 300); // Adjust the delay as needed to ensure the badge is loaded
   };
 }
-
-
 
 function updateAltmetricDonut(doi) {
   var altmetricContainer = document.querySelector('#altmetric-container .altmetric-embed');
