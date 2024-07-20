@@ -1,3 +1,5 @@
+/* Existing CSS */
+
 body {  
   display: flex;
   justify-content: flex-start;
@@ -30,12 +32,12 @@ body {
 }
 
 #info-box {
-  width: 70%; /* Adjust as needed */
+  width: 70%;
   margin-right: 1em;
 }
 
 #altmetric-container {
-  width: 30%; /* Adjust as needed */
+  width: 30%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -142,10 +144,8 @@ a:hover, a:focus {
   color: #4f5b66 ;
   white-space: pre-wrap ;
   word-wrap: break-word ;
-
   width: 200px ; /* Adjust width as needed */
 }
-
 
 .slider {
   -webkit-appearance: none;
@@ -177,10 +177,7 @@ a:hover, a:focus {
   cursor: pointer;
 }
 
-
-
 /* Add this to your existing CSS file */
-
 #slider-container {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -199,3 +196,203 @@ a:hover, a:focus {
 .slider-row span {
   text-align: right;
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #general-box {
+    flex-direction: column;
+  }
+  #interaction-info-container, #info-box, #altmetric-container {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 2em;
+  }
+  h2 {
+    font-size: 1.5em;
+  }
+  h3 {
+    font-size: 1.25em;
+  }
+}
+
+
+/* Existing CSS */
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+  color: #ffffff;
+}
+
+body.dark-mode a {
+  color: #bb86fc;
+}
+
+body.dark-mode a:hover, body.dark-mode a:focus {
+  color: #3700b3;
+}
+
+body.dark-mode .title_td {
+  color: #e0e0e0;
+}
+
+body.dark-mode .slider {
+  background: #555555;
+}
+
+body.dark-mode .slider::-webkit-slider-thumb {
+  background: #bb86fc;
+}
+
+body.dark-mode .slider::-moz-range-thumb {
+  background: #bb86fc;
+}
+
+/* Make Altmetric background transparent and change text color */
+body.dark-mode .altmetric-embed {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+body.dark-mode .altmetric-embed *,
+body.dark-mode .altmetric-embed .altmetric-container,
+body.dark-mode .altmetric-embed .altmetric-details,
+body.dark-mode .altmetric-embed .altmetric-normal-legend a,
+body.dark-mode .altmetric-embed .altmetric-see-more-details a {
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .altmetric-normal-legend img {
+  filter: brightness(0.8);
+}
+
+/* Additional rule to target the Altmetric score number */
+body.dark-mode .altmetric-embed .altmetric-badge .altmetric-score {
+  color: #e0e0e0 !important;
+}
+
+/* Graph Colors */
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: 'Georgia', serif;
+  font-size: 12px;
+  fill: #000;
+}
+
+body.dark-mode .axis path,
+body.dark-mode .axis line {
+  stroke: #e0e0e0;
+}
+
+body.dark-mode .axis text {
+  fill: #e0e0e0;
+}
+
+/* Status Colors Light Mode */
+.status-NA {
+  fill: #303bc9;
+}
+
+.status-EoC {
+  fill: #fec44f;
+}
+
+.status-Retracted {
+  fill: #e02d19;
+}
+
+/* Status Colors Dark Mode */
+body.dark-mode .status-NA {
+  fill: #4a6cf7;
+}
+
+body.dark-mode .status-EoC {
+  fill: #ffcf70;
+}
+
+body.dark-mode .status-Retracted {
+  fill: #ff4c4c;
+}
+
+
+
+
+
+/* Light Mode Status Colors */
+.circle-citation.NA {
+  fill: #303bc9;
+}
+
+.circle-citation.EoC {
+  fill: #fec44f;
+}
+
+.circle-citation.Retracted {
+  fill: #e02d19;
+}
+
+/* Dark Mode Status Colors */
+body.dark-mode .circle-citation.NA {
+  fill: #4a6cf7;
+}
+
+body.dark-mode .circle-citation.EoC {
+  fill: #ffcf70;
+}
+
+body.dark-mode .circle-citation.Retracted {
+  fill: #ff4c4c;
+}
+
+/* Common styles */
+.circle-citation {
+  fill-opacity: 0.3;
+}
+
+
+
+/* Light Mode Status Colors */
+.stacked-bar.NA {
+  fill: #303bc9;
+}
+
+.stacked-bar.EoC {
+  fill: #fec44f;
+}
+
+.stacked-bar.Retracted {
+  fill: #e02d19;
+}
+
+/* Dark Mode Status Colors */
+body.dark-mode .stacked-bar.NA {
+  fill: #4a6cf7;
+}
+
+body.dark-mode .stacked-bar.EoC {
+  fill: #ffcf70;
+}
+
+body.dark-mode .stacked-bar.Retracted {
+  fill: #ff4c4c;
+}
+

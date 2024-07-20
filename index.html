@@ -9,10 +9,11 @@
   <script type='text/javascript' src='https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js'></script>
 </head>
 <body>
+  <button id="dark-mode-toggle">Toggle Dark Mode</button>
   <h1> </br>VIRUS: Visualizing Irregular Research Under Suspicion </h1>
   <div id="general-info-box">
-        <p>The ratio of retracted papers to articles published is rising at an alarming rate and towers, nowadays, 0.2%. Most of these retractions are due to the tireless efforts of scientific and academic sleuths who find, track, and report questionable or outright problematic papers on Pubpeer and in correspondence with editors. Questionable or problematic papers can present in a variety of forms, ranging from self-plagiarism to completely fake papers written by ChatGPT or other language models, and include image or data manipulations, paper mill products detected through their use of tortured phrases, or the use of sneaked references.</p>
-        <p>This interactive visualization aims at providing useful information about large set of papers that are being investigated by scientific sleuths. We present it with a specific usecase. We use a dataset of 456 papers from one institute flagged for potential ethical issues in a <a href="https://researchintegrityjournal.biomedcentral.com/articles/10.1186/s41073-023-00134-4">scientific publication</a>. We completed it by adding papers that received concerns on Pubpeer to reach a total of 670 papers. The issues are ranging from lack of approval to run a clinical trial to recruitment starting before approval was obtained and including the questionable duplication of a single ethical approval number in 249 heterogeneous studies.</p>
+    <p>The ratio of retracted papers to articles published is rising at an alarming rate and towers, nowadays, 0.2%. Most of these retractions are due to the tireless efforts of scientific and academic sleuths who find, track, and report questionable or outright problematic papers on Pubpeer and in correspondence with editors. Questionable or problematic papers can present in a variety of forms, ranging from self-plagiarism to completely fake papers written by ChatGPT or other language models, and include image or data manipulations, paper mill products detected through their use of tortured phrases, or the use of sneaked references.</p>
+    <p>This interactive visualization aims at providing useful information about large set of papers that are being investigated by scientific sleuths. We present it with a specific usecase. We use a dataset of 456 papers from one institute flagged for potential ethical issues in a <a href="https://researchintegrityjournal.biomedcentral.com/articles/10.1186/s41073-023-00134-4">scientific publication</a>. We completed it by adding papers that received concerns on Pubpeer to reach a total of 670 papers. The issues are ranging from lack of approval to run a clinical trial to recruitment starting before approval was obtained and including the questionable duplication of a single ethical approval number in 249 heterogeneous studies.</p>
   </div>
   <div id="general-box">
     <div id="interaction-info-container">
@@ -45,85 +46,125 @@
             <option value="Altmetrics">Altmetrics</option>
           </select>
         </p> 
-          <table id="slider-table">
-            <tr>
-              <td>Minimum Citation:</td>
-              <td>
-                <input type="range" min="0" max="100" value="0" class="slider" id="min_citation_slider">
-              </td>
-              <td><span id="min_citation_value">0</span></td>
-            </tr>
-            <tr>
-              <td>Minimum Altmetric:</td>
-              <td>
-                <input type="range" min="0" max="100" value="0" class="slider" id="min_altmetric_slider">
-              </td>
-              <td><span id="min_altmetric_value">0</span></td>
-            </tr>
-            <tr>
-              <td>Minimum Self-citation:</td>
-              <td>
-                <input type="range" min="0" max="100" value="0" class="slider" id="min_self_slider">
-              </td>
-              <td><span id="min_self_value">0</span></td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      <div id="info-box">
-        <h3> Paper information</h3>
-        <table id="info-table">
-          <tbody>
-            <tr>
-              <td class="title_td">DOI:</td>
-              <td id="DOI"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Title:</td>
-              <td id="Title"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Journal Name:</td>
-              <td id="Journal_Name"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Status:</td>
-              <td id="Status"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Citations:</td>
-              <td id="Citations"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Self-citations:</td>
-              <td id="Self_Citations"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Altmetrics:</td>
-              <td id="Altmetrics"></td>
-            </tr>
-            <tr>
-              <td class="title_td">IRB Number:</td>
-              <td id="IRB_Number"></td>
-            </tr>
-            <tr>
-              <td class="title_td">Link to Status Update:</td>
-              <td id="DOI_Status"></td>
-            </tr>
-          </tbody>
+        <table id="slider-table">
+          <tr>
+            <td>Minimum Citation:</td>
+            <td>
+              <input type="range" min="0" max="100" value="0" class="slider" id="min_citation_slider">
+            </td>
+            <td><span id="min_citation_value">0</span></td>
+          </tr>
+          <tr>
+            <td>Minimum Altmetric:</td>
+            <td>
+              <input type="range" min="0" max="100" value="0" class="slider" id="min_altmetric_slider">
+            </td>
+            <td><span id="min_altmetric_value">0</span></td>
+          </tr>
+          <tr>
+            <td>Minimum Self-citation:</td>
+            <td>
+              <input type="range" min="0" max="100" value="0" class="slider" id="min_self_slider">
+            </td>
+            <td><span id="min_self_value">0</span></td>
+          </tr>
         </table>
       </div>
-      <div id="altmetric-container">
-        <!-- Altmetric donut will be embedded here -->
-        <div data-badge-type='medium-donut' class='altmetric-embed' data-badge-details='right' data-doi=''></div>
-      </div>
+    </div>
+    <div id="info-box">
+      <h3> Paper information</h3>
+      <table id="info-table">
+        <tbody>
+          <tr>
+            <td class="title_td">DOI:</td>
+            <td id="DOI"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Title:</td>
+            <td id="Title"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Journal Name:</td>
+            <td id="Journal_Name"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Status:</td>
+            <td id="Status"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Citations:</td>
+            <td id="Citations"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Self-citations:</td>
+            <td id="Self_Citations"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Altmetrics:</td>
+            <td id="Altmetrics"></td>
+          </tr>
+          <tr>
+            <td class="title_td">IRB Number:</td>
+            <td id="IRB_Number"></td>
+          </tr>
+          <tr>
+            <td class="title_td">Link to Status Update:</td>
+            <td id="DOI_Status"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="altmetric-container">
+      <!-- Altmetric donut will be embedded here -->
+      <div data-badge-type='medium-donut' class='altmetric-embed' data-badge-details='right' data-doi='10.1016/j.nmni.2016.06.003'></div>
     </div>
   </div>
   <div id="graph-container">
     <svg id="chart"></svg>
     <div class="legend" id="legend"></div>
   </div>
+  <script>
+    /*document.addEventListener('DOMContentLoaded', function() {
+      const darkModeToggle = document.getElementById('dark-mode-toggle');
 
+      darkModeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        toggleAltmetricDarkMode();
+      });
+
+      function toggleAltmetricDarkMode() {
+        const altmetricBadges = document.querySelectorAll('.altmetric-embed img');
+        altmetricBadges.forEach(img => {
+          const scoreOverlay = document.createElement('div');
+          scoreOverlay.className = 'altmetric-score-overlay';
+          scoreOverlay.textContent = img.alt.match(/score of (\d+)/)[1];
+
+          if (document.body.classList.contains('dark-mode')) {
+            img.parentNode.style.position = 'relative';
+            img.parentNode.appendChild(scoreOverlay);
+            scoreOverlay.style.position = 'absolute';
+            scoreOverlay.style.top = '50%';
+            scoreOverlay.style.left = '50%';
+            scoreOverlay.style.transform = 'translate(-50%, -50%)';
+            scoreOverlay.style.color = '#e0e0e0';
+            scoreOverlay.style.fontSize = '24px';
+            scoreOverlay.style.fontWeight = 'bold';
+            scoreOverlay.style.pointerEvents = 'none'; // Make sure the overlay doesn't interfere with interactions
+          } else {
+            const existingOverlay = img.parentNode.querySelector('.altmetric-score-overlay');
+            if (existingOverlay) {
+              existingOverlay.remove();
+            }
+          }
+        });
+      }
+
+      // Initial check if dark mode is enabled on page load
+      if (document.body.classList.contains('dark-mode')) {
+        toggleAltmetricDarkMode();
+      }
+    });*/
+  </script>
   <script src="index.js"></script>
 </body>
 </html>

@@ -14,6 +14,10 @@ let height_per_journal = 50
 
 let authorPaperCount = new Map();
 
+let min_citation_value
+let min_altmetric_value
+let min_self_value
+
 d3.csv(spreadsheetUrl)
   .then(data => {
     data.sort((a, b) => {
@@ -75,6 +79,7 @@ d3.csv(spreadsheetUrl)
     yScale.domain(filteredData.map(d => d[0]));
 
     initiateFilters();
+    initiateDarkMode();
 
     function initiateFilters() {
       const selectIRBNumber = d3.select("#IRBNumberSelect")
@@ -254,12 +259,13 @@ d3.csv(spreadsheetUrl)
       const minSelfValue = document.getElementById('min_self_value');
       
       minCitationSlider.oninput = function() {
-        console.log("Change")
         minCitationValue.textContent = this.value;
+        min_citation_value = this.value
       };
       
       minAltmetricSlider.oninput = function() {
         minAltmetricValue.textContent = this.value;
+        min_altmetric_value = this.value
       };
       
       minSelfSlider.oninput = function() {
@@ -343,7 +349,7 @@ d3.csv(spreadsheetUrl)
         .data(d => d.statusData)
         .enter()
         .append("rect")
-        .attr("class", "stacked-bar")
+        .attr("class", d => `stacked-bar ${d.status.replace(/\s+/g, '').replace(/\//g, '')}`) // Add status class
         .attr("x", (d, i, nodes) => {
           let prevWidth = d3.sum(d3.select(nodes[i].parentNode).datum().statusData.slice(0, i), item => item.count);
           return xScale(prevWidth);
@@ -351,7 +357,12 @@ d3.csv(spreadsheetUrl)
         .attr("y", 0)
         .attr("width", d => xScale(d.count))
         .attr("height", yScale.bandwidth())
-        .attr("fill", d => statusColors[d.status]);
+        .on("mouseover", function(event, d) {
+          d3.select(this).attr("class", `stacked-bar ${d.status.replace(/\s+/g, '').replace(/\//g, '')} selected`);
+        })
+        .on("mouseout", function(event, d) {
+          d3.select(this).attr("class", `stacked-bar ${d.status.replace(/\s+/g, '').replace(/\//g, '')}`);
+        });
     }
 
     function displayCircles(enterBars, barGroups, maxRadius) {
@@ -359,38 +370,32 @@ d3.csv(spreadsheetUrl)
         .domain([0, d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation]))])
         .range([5, Math.pow(maxRadius, 2)]);
 
+      
+
       let circles = enterBars.merge(barGroups).selectAll(".circle-citation")
         .data(d => d[1])
         .enter()
         .append("circle")
-        .attr("class", "circle-citation")
+        .attr("class", d => `circle-citation ${d.Status.replace(/\s+/g, '').replace(/\//g, '')}`) // Add status class
         .attr("cx", (d, i) => xScale(i + 1))
         .attr("cy", d => yScale(d.Journal_Name) + yScale.bandwidth() / 2)
         .attr("r", d => {
           let value = computeValueLogDependant(parseFloat(d[selectedCitation]));
           return (parseFloat(d[selectedCitation]) === 0 ? 5 : Math.sqrt(citationScale(value)));
         })
-        .attr("fill", d => statusColors[d.Status])
-        .attr("fill-opacity", 0.3)
-        .attr("original-fill", d => statusColors[d.Status])
         .attr("id", d => "point_" + d.Line_ID)
         .on("mouseover", function (event, d) {
-          //d3.select(this).attr("fill", "yellow");
-          //d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
-          d3.select(this).attr("class","circle-citation selected")
-          updateAltmetricDonut(d.DOI)
+          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '')} selected`);
+          updateAltmetricDonut(d.DOI);
           updateInfo(d);
-
         })
         .on("mouseout", function (event, d) {
-          let tmp = d3.select(this);
-          d3.select(this).attr("class","circle-citation")
-          //tmp.attr("fill", tmp.attr("original-fill"));
-          //tmp = d3.select("#point_" + d.Line_ID);
-          //tmp.attr("fill", tmp.attr("original-fill"));
+          d3.select(this).attr("class", `circle-citation ${d.Status.replace(/\s+/g, '')}`);
         })
         .transition()
         .duration(500);
+
+
 
       const legend = d3.select("#legend");
       const legendValues = [0, 0.25, 0.5, 0.75, 1].map(d => d * d3.max(filteredData.flatMap(d => d[1]), d => parseFloat(d[selectedCitation])));
@@ -454,6 +459,102 @@ function updateInfo(d) {
     d3.select("#DOI_Status").text('N/A');
   }
 }
+
+
+
+function toggleAltmetricDarkMode() {
+  const embeds = document.querySelectorAll('.altmetric-embed');
+  embeds.forEach(embed => {
+    const normalLegend = embed.querySelector('.altmetric-normal-legend a');
+    const seeMoreDetails = embed.querySelector('.altmetric-see-more-details a');
+    const images = embed.querySelectorAll('img');
+
+    if (document.body.classList.contains('dark-mode')) {
+      embed.style.backgroundColor = '#333';
+      embed.style.border = '1px solid #555';
+      if (normalLegend) normalLegend.style.color = '#e0e0e0';
+      if (seeMoreDetails) seeMoreDetails.style.color = '#e0e0e0';
+      images.forEach(img => {
+        img.style.filter = 'brightness(0.8)';
+      });
+    } else {
+      embed.style.backgroundColor = '';
+      embed.style.border = '';
+      if (normalLegend) normalLegend.style.color = '';
+      if (seeMoreDetails) seeMoreDetails.style.color = '';
+      images.forEach(img => {
+        img.style.filter = '';
+      });
+    }
+  });
+}
+
+
+
+function initiateDarkMode(){
+  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  darkModeToggle.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    console.log("Clicked")
+    toggleAltmetricDarkMode();
+
+  });
+
+  function toggleAltmetricDarkMode() {
+    const altmetricBadges = document.querySelectorAll('.altmetric-embed img');
+    console.log('toggleAltmetricDarkMode')
+    altmetricBadges.forEach(img => {
+      applyOverlay(img);
+    });
+  }
+
+  function applyOverlay(img) {
+    const scoreMatch = img.alt.match(/score of (\d+)/);
+    if (scoreMatch) {
+      const scoreOverlay = document.createElement('div');
+      scoreOverlay.className = 'altmetric-score-overlay';
+      scoreOverlay.textContent = scoreMatch[1];
+
+      if (document.body.classList.contains('dark-mode')) {
+        img.parentNode.style.position = 'relative';
+        img.parentNode.appendChild(scoreOverlay);
+        scoreOverlay.style.position = 'absolute';
+        scoreOverlay.style.top = '50%';
+        scoreOverlay.style.left = '50%';
+        scoreOverlay.style.transform = 'translate(-50%, -50%)';
+        scoreOverlay.style.color = '#e0e0e0';
+        scoreOverlay.style.fontSize = '24px';
+        scoreOverlay.style.fontWeight = 'bold';
+        scoreOverlay.style.pointerEvents = 'none'; // Make sure the overlay doesn't interfere with interactions
+      } else {
+        const existingOverlay = img.parentNode.querySelector('.altmetric-score-overlay');
+        if (existingOverlay) {
+          existingOverlay.remove();
+        }
+      }
+    }
+  }
+
+  // Initial check if dark mode is enabled on page load
+  if (document.body.classList.contains('dark-mode')) {
+    toggleAltmetricDarkMode();
+  }
+
+  // Function to update the Altmetric donut
+  window.updateAltmetricDonut = function(doi) {
+    var altmetricContainer = document.querySelector('#altmetric-container .altmetric-embed');
+    altmetricContainer.setAttribute('data-doi', doi);
+    _altmetric_embed_init(); // Reinitialize the Altmetric embed script
+
+    // Apply overlay after the new badge is loaded
+    setTimeout(function() {
+      const newBadge = altmetricContainer.querySelector('img');
+      applyOverlay(newBadge);
+    }, 300); // Adjust the delay as needed to ensure the badge is loaded
+  };
+}
+
+
 
 function updateAltmetricDonut(doi) {
   var altmetricContainer = document.querySelector('#altmetric-container .altmetric-embed');
