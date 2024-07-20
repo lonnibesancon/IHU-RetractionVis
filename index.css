@@ -1,4 +1,4 @@
-/* Existing CSS */
+/* General Styles */
 
 body {  
   display: flex;
@@ -72,7 +72,8 @@ body {
   margin-right: 0.2em;
 }
 
-/* Style for H1 */
+/* Typography Styles */
+
 h1 {
   font-family: 'Georgia', serif;
   font-size: 2.5em;
@@ -85,7 +86,6 @@ h1 {
   line-height: 0.5em;
 }
 
-/* Style for H2 */
 h2 {
   font-family: 'Georgia', serif;
   font-size: 2em;
@@ -94,7 +94,6 @@ h2 {
   margin-bottom: 0.75em;
 }
 
-/* Style for H3 */
 h3 {
   font-family: 'Georgia', serif;
   font-size: 1.75em;
@@ -104,7 +103,6 @@ h3 {
   margin-top: 0;
 }
 
-/* General paragraph style */
 p {
   margin-bottom: 0.5em;
   margin-top: 0;
@@ -115,11 +113,9 @@ td.title_td {
   font-family: 'Georgia', serif;
   font-weight: bold;
   color: #4f5b66;
-  /*padding: 0.2em;*/
   line-height: 18px;
 }
 
-/* Style for a */
 a {
   color: #3498db;
   text-decoration: none;
@@ -131,21 +127,33 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 
+/* Selection Styles */
+
 .selected {
   stroke: black;
   stroke-width: 3;
 }
 
-/* Axis text styles */
+/* Axis Styles */
+
 .axis text {
-  font-family: 'Georgia', serif ;
-  font-size: 10px ;
-  font-weight: bold ;
-  color: #4f5b66 ;
-  white-space: pre-wrap ;
-  word-wrap: break-word ;
-  width: 200px ; /* Adjust width as needed */
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #4f5b66;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  width: 200px; /* Adjust width as needed */
 }
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+/* Slider Styles */
 
 .slider {
   -webkit-appearance: none;
@@ -177,7 +185,6 @@ a:hover, a:focus {
   cursor: pointer;
 }
 
-/* Add this to your existing CSS file */
 #slider-container {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -198,6 +205,7 @@ a:hover, a:focus {
 }
 
 /* Responsive Design */
+
 @media (max-width: 768px) {
   #general-box {
     flex-direction: column;
@@ -224,10 +232,8 @@ a:hover, a:focus {
   }
 }
 
+/* Dark Mode Styles */
 
-/* Existing CSS */
-
-/* Dark Mode */
 body.dark-mode {
   background-color: #121212;
   color: #e0e0e0;
@@ -261,7 +267,6 @@ body.dark-mode .slider::-moz-range-thumb {
   background: #bb86fc;
 }
 
-/* Make Altmetric background transparent and change text color */
 body.dark-mode .altmetric-embed {
   background-color: transparent !important;
   border: none !important;
@@ -279,23 +284,8 @@ body.dark-mode .altmetric-normal-legend img {
   filter: brightness(0.8);
 }
 
-/* Additional rule to target the Altmetric score number */
 body.dark-mode .altmetric-embed .altmetric-badge .altmetric-score {
   color: #e0e0e0 !important;
-}
-
-/* Graph Colors */
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.axis text {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  fill: #000;
 }
 
 body.dark-mode .axis path,
@@ -308,6 +298,7 @@ body.dark-mode .axis text {
 }
 
 /* Status Colors Light Mode */
+
 .status-NA {
   fill: #303bc9;
 }
@@ -321,6 +312,7 @@ body.dark-mode .axis text {
 }
 
 /* Status Colors Dark Mode */
+
 body.dark-mode .status-NA {
   fill: #4a6cf7;
 }
@@ -333,11 +325,8 @@ body.dark-mode .status-Retracted {
   fill: #ff4c4c;
 }
 
+/* Circle Citation Styles Light Mode */
 
-
-
-
-/* Light Mode Status Colors */
 .circle-citation.NA {
   fill: #303bc9;
 }
@@ -350,7 +339,12 @@ body.dark-mode .status-Retracted {
   fill: #e02d19;
 }
 
-/* Dark Mode Status Colors */
+.circle-citation {
+  fill-opacity: 0.3;
+}
+
+/* Circle Citation Styles Dark Mode */
+
 body.dark-mode .circle-citation.NA {
   fill: #4a6cf7;
 }
@@ -363,14 +357,8 @@ body.dark-mode .circle-citation.Retracted {
   fill: #ff4c4c;
 }
 
-/* Common styles */
-.circle-citation {
-  fill-opacity: 0.3;
-}
+/* Stacked Bar Styles Light Mode */
 
-
-
-/* Light Mode Status Colors */
 .stacked-bar.NA {
   fill: #303bc9;
 }
@@ -383,7 +371,8 @@ body.dark-mode .circle-citation.Retracted {
   fill: #e02d19;
 }
 
-/* Dark Mode Status Colors */
+/* Stacked Bar Styles Dark Mode */
+
 body.dark-mode .stacked-bar.NA {
   fill: #4a6cf7;
 }
@@ -395,4 +384,3 @@ body.dark-mode .stacked-bar.EoC {
 body.dark-mode .stacked-bar.Retracted {
   fill: #ff4c4c;
 }
-

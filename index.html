@@ -123,48 +123,6 @@
     <svg id="chart"></svg>
     <div class="legend" id="legend"></div>
   </div>
-  <script>
-    /*document.addEventListener('DOMContentLoaded', function() {
-      const darkModeToggle = document.getElementById('dark-mode-toggle');
-
-      darkModeToggle.addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        toggleAltmetricDarkMode();
-      });
-
-      function toggleAltmetricDarkMode() {
-        const altmetricBadges = document.querySelectorAll('.altmetric-embed img');
-        altmetricBadges.forEach(img => {
-          const scoreOverlay = document.createElement('div');
-          scoreOverlay.className = 'altmetric-score-overlay';
-          scoreOverlay.textContent = img.alt.match(/score of (\d+)/)[1];
-
-          if (document.body.classList.contains('dark-mode')) {
-            img.parentNode.style.position = 'relative';
-            img.parentNode.appendChild(scoreOverlay);
-            scoreOverlay.style.position = 'absolute';
-            scoreOverlay.style.top = '50%';
-            scoreOverlay.style.left = '50%';
-            scoreOverlay.style.transform = 'translate(-50%, -50%)';
-            scoreOverlay.style.color = '#e0e0e0';
-            scoreOverlay.style.fontSize = '24px';
-            scoreOverlay.style.fontWeight = 'bold';
-            scoreOverlay.style.pointerEvents = 'none'; // Make sure the overlay doesn't interfere with interactions
-          } else {
-            const existingOverlay = img.parentNode.querySelector('.altmetric-score-overlay');
-            if (existingOverlay) {
-              existingOverlay.remove();
-            }
-          }
-        });
-      }
-
-      // Initial check if dark mode is enabled on page load
-      if (document.body.classList.contains('dark-mode')) {
-        toggleAltmetricDarkMode();
-      }
-    });*/
-  </script>
   <script src="index.js"></script>
 </body>
 </html>
