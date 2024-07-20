@@ -267,7 +267,9 @@ d3.csv(spreadsheetUrl)
           //d3.select(this).attr("fill", "yellow");
           //d3.select("#point_" + d.Line_ID).attr("fill", "yellow");
           d3.select(this).attr("class","circle-citation selected")
+          updateAltmetricDonut(d.DOI)
           updateInfo(d);
+
         })
         .on("mouseout", function (event, d) {
           let tmp = d3.select(this);
@@ -340,6 +342,12 @@ function updateInfo(d) {
   } else {
     d3.select("#DOI_Status").text('N/A');
   }
+}
+
+function updateAltmetricDonut(doi) {
+  var altmetricContainer = document.querySelector('#altmetric-container .altmetric-embed');
+  altmetricContainer.setAttribute('data-doi', doi);
+  _altmetric_embed_init(); // Reinitialize the Altmetric embed script
 }
 
 // Wrapping function
